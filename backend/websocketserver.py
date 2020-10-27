@@ -16,4 +16,4 @@ class WebsocketServer:
 
     async def run(self):
         ws_server = await websockets.serve(self.__websocket_cb, "127.0.0.1", 5678)
-        ws_server.wait_closed()
+        await ws_server.wait_closed()

@@ -1,0 +1,125 @@
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebRTC webcam</title>
+    <style>
+    button {
+        padding: 8px 16px;
+    }
+
+    video {
+        width: 20%;
+    }
+    </style>
+</head>
+<body>
+
+<div class="option">
+    <input id="use-stun" type="checkbox"/>
+    <label for="use-stun">Use STUN server</label>
+</div>
+<button id="start" onclick="start('Cam1')">Start1</button>
+<button id="start" onclick="start('Cam2')">Start2</button>
+
+<div id="media">
+    <h2>Media</h2>
+
+    <!--<audio id="audio" autoplay="true"></audio>
+    <video id="video" autoplay="true" playsinline="true" controls width="500px"></video>-->
+</div>
+
+<script>
+  var pcs = [];
+
+function negotiate(pc, name) {
+    pc.addTransceiver('video', {direction: 'recvonly'});
+    pc.addTransceiver('audio', {direction: 'recvonly'});
+    return pc.createOffer().then(function(offer) {
+        return pc.setLocalDescription(offer);
+    }).then(function() {
+        // wait for ICE gathering to complete
+        return new Promise(function(resolve) {
+            if (pc.iceGatheringState === 'complete') {
+                resolve();
+            } else {
+                function checkState() {
+                    if (pc.iceGatheringState === 'complete') {
+                        pc.removeEventListener('icegatheringstatechange', checkState);
+                        resolve();
+                    }
+                }
+                pc.addEventListener('icegatheringstatechange', checkState);
+            }
+        });
+    }).then(function() {
+        var offer = pc.localDescription;
+        return fetch('/webrtc/offer', {
+            body: JSON.stringify({
+                sdp: offer.sdp,
+                type: offer.type,
+                name: name
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            method: 'POST'
+        });
+    }).then(function(response) {
+        return response.json();
+    }).then(function(answer) {
+        return pc.setRemoteDescription(answer);
+    }).catch(function(e) {
+        alert(e);
+    });
+}
+
+function start(name) {
+    var config = {
+        sdpSemantics: 'unified-plan'
+    };
+
+    if (document.getElementById('use-stun').checked) {
+        config.iceServers = [{urls: ['stun:stun.l.google.com:19302']}];
+    }
+
+    pc = new RTCPeerConnection(config);
+    pcs.push(pc);
+
+    // connect audio / video
+    pc.addEventListener('track', function(evt) {
+        const videotag = document.getElementById("Video-" + name);
+        if (videotag !== null) {
+            return;
+        } 
+        let video = document.createElement('video');
+        video.id = "Video-" + name;
+        video.autoplay = true;
+        video.controls = true;
+        video.srcObject = evt.streams[0];
+        document.getElementById('media').append(video)
+
+        /*if (evt.track.kind == 'video') {
+            document.getElementById('video').srcObject = evt.streams[0];
+        } else {
+            document.getElementById('audio').srcObject = evt.streams[0];
+        }*/
+    });
+
+    //document.getElementById('start').style.display = 'none';
+    negotiate(pc, name);
+    document.getElementById('stop').style.display = 'inline-block';
+}
+
+function stop() {
+    document.getElementById('stop').style.display = 'none';
+
+    // close peer connection
+    setTimeout(function() {
+        pc.close();
+    }, 500);
+}
+
+</script>
+</body>
+</html>
