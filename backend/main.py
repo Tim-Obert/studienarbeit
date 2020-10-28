@@ -4,7 +4,7 @@ from frameserver import FrameServer
 from cameraregistry import CameraRegistry
 from websocketserver import WebsocketServer
 import api
-import threading   
+import threading
 
 async def run():
 
@@ -13,8 +13,7 @@ async def run():
     websocketserver = WebsocketServer(frameserver)
 
     cameraregistry.add_camera(Camera("Cam1", "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov"))
-
-    asyncio.create_task(frameserver.capture(cameraregistry.get_camera_by_name("Cam2")))
+    asyncio.create_task(frameserver.capture(cameraregistry.get_camera_by_name("Cam1")))
 
     asyncio.create_task(websocketserver.run())
     asyncio.create_task(api.run(frameserver, cameraregistry))
