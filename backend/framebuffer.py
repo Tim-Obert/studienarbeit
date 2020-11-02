@@ -12,7 +12,6 @@ class FrameBuffer:
         self.__buffer[self.__index] = item
 
     def get_buffer(self) -> list:
-        
         return self.__shift_to_sorted(self.__buffer)
 
     def get_index(self) -> int:

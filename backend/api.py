@@ -31,9 +31,12 @@ def test(request):
     return web.Response(content_type="text/html", text=content)
 
 async def test2(request):
-    content = (await frameserver.get_player("Cam1").video.recv()).to_image()
+    last = frameserver.get_buffer("Cam1").get_buffer()[0]
+    if (last == None):
+        return web.Response(content_type="text/html", text="No Frame")
     output = io.BytesIO()
-    content.save(output, format='PNG')
+    frame = last.to_image()
+    frame.save(output, format='PNG')
     output.seek(0)
     output_s = output.read()
     b64 = b64encode(output_s)
@@ -43,6 +46,9 @@ async def test2(request):
 def single(name):
     return Response(generate(name),
 		mimetype = "multipart/x-mixed-replace; boundary=frame")
+
+async def buffer(request):
+    return web.Response(content_type="text/plain", text=str(frameserver.get_buffer("Cam1").get_buffer()))
 
 async def offer(request):
     params = await request.json()
@@ -88,6 +94,7 @@ async def run(fs: FrameServer, cr: CameraRegistry):
     app.router.add_get("/", multi)
     app.router.add_get("/test", test)
     app.router.add_get("/test2", test2)
+    app.router.add_get("/buffer", buffer)
     app.router.add_post("/webrtc/offer", offer)
     runner = web.AppRunner(app)
     await runner.setup()

@@ -12,9 +12,9 @@ async def run():
     cameraregistry = CameraRegistry()
     websocketserver = WebsocketServer(frameserver)
 
-    cameraregistry.add_camera(Camera("Cam1", "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov"))
+    cameraregistry.add_camera(Camera("Cam1", "rtsp://192.168.1.105:5540/ch0"))
     asyncio.create_task(frameserver.capture(cameraregistry.get_camera_by_name("Cam1")))
-
+    
     asyncio.create_task(websocketserver.run())
     asyncio.create_task(api.run(frameserver, cameraregistry))
     #apithread = threading.Thread(target = lambda x: api.start(x), args=(frameserver,))
