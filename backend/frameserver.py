@@ -1,7 +1,6 @@
 from camera import Camera
 from framebuffer import FrameBuffer
 import cv2 as cv
-from base64 import b64encode
 import asyncio
 from aiortc.contrib.media import MediaPlayer
 
@@ -22,13 +21,12 @@ class FrameServer:
         #    self.buff[cam.name] = frame
         #    await asyncio.sleep(self.frametime)
         player = MediaPlayer(cam.url, options={"rtsp_transport": "tcp"})
-        self.__buffers[cam.name] = FrameBuffer(100)
+        self.__buffers[cam.name] = FrameBuffer(1000)
         self.__players[cam.name] = player
         while(1):
             frame = await player.video.recv()
             audio = await player.audio.recv()
             self.__buffers[cam.name].add(frame)
-            print(frame.pts%100000)
             await asyncio.sleep(self.frametime)
 
     def get_player(self, name: str) -> MediaPlayer:

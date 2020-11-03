@@ -1,8 +1,8 @@
 import os
+from videowriter import VideoWriter
 from frameserver import FrameServer
 from cameraregistry import CameraRegistry
-from flask import Flask, render_template, Response, request, jsonify
-from aiohttp import web
+from aiohttp import web, MultipartWriter
 from aiortc import RTCPeerConnection, RTCSessionDescription
 from aiortc.contrib.media import MediaPlayer
 import uuid
@@ -11,27 +11,24 @@ import cv2 as cv
 from PIL import Image
 from base64 import b64encode
 import io
-
-app = Flask(__name__)
+import asyncio
 
 frameserver = None
 cameraregistry = None
 pcs = set()
 
-def generate(name):
-    while True:
-        frame = frameserver.get_frame_jpeg(name)
-        yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(frame) + b'\r\n')
-
-def multi(request):
+async def multi(request):
     return web.Response(content_type="application/json", text="{}")
 
-def test(request):
+async def test(request):
     content = open(os.path.join(os.path.dirname(__file__), "templates/test.html"), "r").read()
     return web.Response(content_type="text/html", text=content)
 
-async def test2(request):
-    last = frameserver.get_buffer("Cam1").get_buffer()[0]
+async def save(request):
+    frames = frameserver.get_buffer("Cam1").get_frames()
+    writer = VideoWriter("/mnt/c/Users/Hannes/Desktop/studienarbeit/backend/out.mp4")
+    writer.write(frames)
+    last = frames[0]
     if (last == None):
         return web.Response(content_type="text/html", text="No Frame")
     output = io.BytesIO()
@@ -42,13 +39,32 @@ async def test2(request):
     b64 = b64encode(output_s)
     return web.Response(content_type="text/html", text="<img src='data:image/png;base64," + str(b64)[2:-1] + "'>")
 
-@app.route("/streams/<name>")
-def single(name):
-    return Response(generate(name),
-		mimetype = "multipart/x-mixed-replace; boundary=frame")
+async def single(request):
+    name = request.match_info['name']
+    response = web.StreamResponse(status=200, reason='OK', headers={
+        'Content-Type': 'multipart/x-mixed-replace; '
+                        'boundary=--frame',
+    })
+    await response.prepare(request)
+    buffer = frameserver.get_buffer(name)
+    while True:
+        with MultipartWriter('image/jpeg', boundary="frame") as mpwriter:
+            frame = buffer.get_latest_frame()
+            if frame == None:
+                continue
+            data = frame.to_image()
 
-async def buffer(request):
-    return web.Response(content_type="text/plain", text=str(frameserver.get_buffer("Cam1").get_buffer()))
+            img_byte_arr = io.BytesIO()
+            data.save(img_byte_arr, format='JPEG')
+            img_byte_arr = img_byte_arr.getvalue()
+
+            mpwriter.append(img_byte_arr, {
+                'Content-Type': 'image/jpeg'
+            })
+            await mpwriter.write(response, False)
+            await asyncio.sleep(1/30)
+        await response.drain()
+    return response
 
 async def offer(request):
     params = await request.json()
@@ -65,8 +81,7 @@ async def offer(request):
             pcs.discard(pc)
 
     cam = cameraregistry.get_camera_by_name(params['name'])
-    player = frameserver.get_player(cam.name)#MediaPlayer(cam.url, options={"rtsp_transport": "tcp"})
-    print(player)
+    player = MediaPlayer(cam.url, options={"rtsp_transport": "tcp"})#frameserver.get_player(cam.name)
 
     await pc.setRemoteDescription(offer)
     for t in pc.getTransceivers():
@@ -93,8 +108,8 @@ async def run(fs: FrameServer, cr: CameraRegistry):
     app = web.Application()
     app.router.add_get("/", multi)
     app.router.add_get("/test", test)
-    app.router.add_get("/test2", test2)
-    app.router.add_get("/buffer", buffer)
+    app.router.add_get("/save", save)
+    app.router.add_get("/streams/{name}", single)
     app.router.add_post("/webrtc/offer", offer)
     runner = web.AppRunner(app)
     await runner.setup()

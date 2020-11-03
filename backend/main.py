@@ -12,7 +12,7 @@ async def run():
     cameraregistry = CameraRegistry()
     websocketserver = WebsocketServer(frameserver)
 
-    cameraregistry.add_camera(Camera("Cam1", "rtsp://192.168.1.105:5540/ch0"))
+    cameraregistry.add_camera(Camera("Cam1", "/mnt/c/Users/Hannes/Desktop/video.mp4"))
     asyncio.create_task(frameserver.capture(cameraregistry.get_camera_by_name("Cam1")))
     
     asyncio.create_task(websocketserver.run())
