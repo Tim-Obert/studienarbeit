@@ -1,4 +1,3 @@
-from websockets.framing import Frame
 from frameserver import FrameServer
 import websockets
 import json
