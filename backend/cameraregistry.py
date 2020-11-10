@@ -15,4 +15,7 @@ class CameraRegistry:
     def get_camera_by_name(self, name) -> Camera:
         return self.__cameras.search(Query().name == name)
 
+    def delete_camera(self, name):
+        self.__cameras.remove(Query().name == name)    
+
     

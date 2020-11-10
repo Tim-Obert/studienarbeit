@@ -2,6 +2,7 @@ import os
 from videowriter import VideoWriter
 from frameserver import FrameServer
 from cameraregistry import CameraRegistry
+from camera import Camera
 from aiohttp import web, MultipartWriter
 from aiortc import RTCPeerConnection, RTCSessionDescription
 from aiortc.contrib.media import MediaPlayer
@@ -100,6 +101,25 @@ async def offer(request):
         ),
     )
 
+async def addCamera(request):
+    params = await request.json()
+    cam = Camera(params['name'], params['url'])
+    cameraregistry.add_camera(cam)
+    asyncio.create_task(frameserver.capture(cam))
+    return web.Response(status=201)
+
+async def getCameras(request):
+    return web.Response(
+        content_type="application/json",
+        text=json.dumps(
+            cameraregistry.get_cameras()
+        ),
+    )
+async def deleteCamera(request):
+    params = await request.json()
+    cameraregistry.delete_camera(params['name'])
+    return web.Response(status=204)
+
 async def run(fs: FrameServer, cr: CameraRegistry):
     global frameserver, cameraregistry
     frameserver = fs
@@ -111,6 +131,9 @@ async def run(fs: FrameServer, cr: CameraRegistry):
     app.router.add_get("/save", save)
     app.router.add_get("/streams/{name}", single)
     app.router.add_post("/webrtc/offer", offer)
+    app.router.add_post("/camera", addCamera)
+    app.router.add_delete("/camera", deleteCamera)
+    app.router.add_get("/cameras", getCameras)
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, 'localhost', 5000)    
