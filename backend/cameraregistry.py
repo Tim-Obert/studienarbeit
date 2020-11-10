@@ -10,7 +10,6 @@ class CameraRegistry:
         return self.__cameras.all()
 
     def add_camera(self, cam: Camera):
-        print(cam.to_JSON)
         self.__cameras.insert(cam.to_JSON())
 
     def get_camera_by_name(self, name) -> Camera:

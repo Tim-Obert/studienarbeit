@@ -21,7 +21,7 @@ class MotionDetector(ABC):
             await self._on_before_analyze()
 
             for cam in self.cameraregistry.get_cameras():
-                res = await self._analyze(cam, self.frameserver.get_buffer(cam.name))
+                res = await self._analyze(cam, self.frameserver.get_buffer(cam['name']))
                 await self._on_result(res)
                 if self.on_result_handler is not None:
                     self.on_result_handler(res)
