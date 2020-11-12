@@ -1,16 +1,10 @@
 <template>
-    <div class="rtc-stream">
-            <button id="start" v-on:click="start">Start1</button>
-
-
-            <div id="media">
-                <h2>Media</h2>
-
-                <!--<audio id="audio" autoplay="true"></audio>
-                <video id="video" autoplay="true" playsinline="true" controls width="500px"></video>-->
-            </div>
+    <div class="rtc-stream__wrapper">
+        <div id="media">
+            <v-skeleton-loader type="image" width="600px" height="300px" v-if="!loaded"/>
+            <video v-if="loaded" id="video" src="#" :srcObject.prop="streamObject"  playsinline autoplay controls width="600px"></video>
+        </div>
     </div>
-
 
 </template>
 
@@ -21,7 +15,8 @@
             return {
                 loaded: false,
                 stream: null,
-                pc: null
+                pc: null,
+                streamObject: null
             }
         },
         props: {
@@ -29,91 +24,75 @@
                 type: String,
                 required: true
             },
-            autoplay: {
+            useStun: {
                 type: Boolean
-            }
+            },
+
         },
         methods: {
-            start(){
-                console.log(1);
-                const config = {
-                    sdpSemantics: 'unified-plan'
-                };
-
-                this.pc = new RTCPeerConnection(config);
-
-                // connect audio / video
-                this.pc.addEventListener('track', function(evt) {
-                    const videotag = document.getElementById("Video-" + this.name);
-                    if (videotag !== null) {
-                        return;
-                    }
-                    const video = document.createElement('video');
-                    video.id = "Video-" + this.name;
-                    video.autoplay = true;
-                    video.controls = true;
-                    video.srcObject = evt.streams[0];
-                    document.getElementById('media').append(video)
-                    console.log(123)
-
-                    /*if (evt.track.kind == 'video') {
-                        document.getElementById('video').srcObject = evt.streams[0];
-                    } else {
-                        document.getElementById('audio').srcObject = evt.streams[0];
-                    }*/
-                });
-
-                //document.getElementById('start').style.display = 'none';
-                this.negotiate(this.pc);
-            },
-            negotiate(pc){
+            negotiate(pc, name) {
                 pc.addTransceiver('video', {direction: 'recvonly'});
                 pc.addTransceiver('audio', {direction: 'recvonly'});
-                return pc.createOffer().then(function(offer) {
-                    console.log(2);
+                return pc.createOffer().then(function (offer) {
                     return pc.setLocalDescription(offer);
-                }).then(() => {
-                    console.log(3);
+                }).then(function () {
                     // wait for ICE gathering to complete
-                    return new Promise((resolve) => {
+                    return new Promise(function (resolve) {
                         if (pc.iceGatheringState === 'complete') {
                             resolve();
                         } else {
-                            console.log(5)
-                            pc.addEventListener('icegatheringstatechange', this.checkState(pc, resolve));
+                            pc.addEventListener('icegatheringstatechange', function check() {
+                                if (pc.iceGatheringState === 'complete') {
+                                    pc.removeEventListener('icegatheringstatechange', check);
+                                    resolve();
+                                }
+                            });
                         }
                     });
-                }).then(() => {
-                    console.log(4);
+                }).then(function () {
                     const offer = pc.localDescription;
-                    return fetch('http://localhost:8080/webrtc/offer', {
+                    return fetch('/webrtc/offer', {
                         body: JSON.stringify({
                             sdp: offer.sdp,
                             type: offer.type,
-                            name: this.name
+                            name: name
                         }),
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         method: 'POST'
                     });
-                }).then(function(response) {
+                }).then(function (response) {
                     return response.json();
-                }).then(function(answer) {
+                }).then(function (answer) {
                     return pc.setRemoteDescription(answer);
-                }).catch(function(e) {
+                }).catch(function (e) {
                     alert(e);
                 });
             },
-            checkState(pc, resolve) {
-                console.log(pc)
-                if (pc.iceGatheringState === 'complete') {
-                    pc.removeEventListener('icegatheringstatechange', this.checkState);
+            start() {
+                const config = {
+                    sdpSemantics: 'unified-plan'
+                };
 
-                    resolve();
+                if (this.useStun) {
+                    config.iceServers = [{urls: ['stun:stun.l.google.com:19302']}];
                 }
-                resolve();
-            }
+
+                const pc = new RTCPeerConnection(config);
+
+
+                // connect audio / video
+                pc.addEventListener('track', function (evt) {
+                    this.streamObject = evt.streams[0];
+                    this.loaded = true;
+                }.bind(this));
+                this.negotiate(pc, this.name);
+            },
+
+        },
+        created() {
+            this.start();
         }
     }
 </script>

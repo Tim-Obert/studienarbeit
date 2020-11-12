@@ -15,7 +15,7 @@
                                 {{cam.url}}
                             </v-card-text>
                             <v-card-actions class="justify-center">
-                                <v-btn color="orange" text>
+                                <v-btn color="orange" :to="'/stream/'+cam.name" text>
                                     Open
                                 </v-btn>
 
