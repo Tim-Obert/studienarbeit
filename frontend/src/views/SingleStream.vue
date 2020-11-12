@@ -1,7 +1,6 @@
 <template>
-  <div class="home">
-    Home
-    <RTCStream name="Cam1" :useStun="true" :autoplay="true"/>
+  <div class="singleStream">
+    <RTCStream :name="$route.params.id" :useStun="true" :autoplay="true"/>
   </div>
 </template>
 
