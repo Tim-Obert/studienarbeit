@@ -1,5 +1,8 @@
+
 # Created by https://www.toptal.com/developers/gitignore/api/python,vscode
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,vscode
+
+data/
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

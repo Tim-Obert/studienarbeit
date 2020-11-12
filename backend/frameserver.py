@@ -20,13 +20,13 @@ class FrameServer:
         #    ret, frame = vcap.read()
         #    self.buff[cam.name] = frame
         #    await asyncio.sleep(self.frametime)
-        player = MediaPlayer(cam['url'], options={"rtsp_transport": "tcp"})
-        self.__buffers[cam['name']] = FrameBuffer(1000)
-        self.__players[cam['name']] = player
+        player = MediaPlayer(cam.url, options={"rtsp_transport": "tcp"})
+        self.__buffers[cam.name] = FrameBuffer(1000)
+        self.__players[cam.name] = player
         while(1):
             frame = await player.video.recv()
             audio = await player.audio.recv()
-            self.__buffers[cam['name']].add(frame)
+            self.__buffers[cam.name].add(frame)
             await asyncio.sleep(self.frametime)
 
     def get_player(self, name: str) -> MediaPlayer:
