@@ -1,7 +1,7 @@
 import asyncio
+from tinydbconnector import TinyDBConnector
 from camera import Camera
 from frameserver import FrameServer
-from cameraregistry import CameraRegistry
 from websocketserver import WebsocketServer
 from motiondetection.bsmotiondetector import BSMotionDetector
 import api
@@ -9,21 +9,20 @@ import threading
 
 
 async def run():
+    db = TinyDBConnector('data/db.json')
+
     frameserver = FrameServer()
-    cameraregistry = CameraRegistry()
     websocketserver = WebsocketServer(frameserver)
 
-    # later: add via api and load from storage on startup
-
-    for cam in cameraregistry.get_cameras():
+    for cam in db.get_cameras():
         asyncio.create_task(frameserver.capture(cam))
-    
-    motiondetector = BSMotionDetector(cameraregistry, frameserver)
-    motiondetector.on_result_handler = lambda result: print("result from " + result.camera['name'] + ": " + str(result.motion)) 
+
+    motiondetector = BSMotionDetector(db, frameserver)
+    motiondetector.on_result_handler = lambda result: print("result from " + result.camera.name + ": " + str(result.motion)) 
     asyncio.create_task(motiondetector.run())
 
     asyncio.create_task(websocketserver.run())
-    asyncio.create_task(api.run(frameserver, cameraregistry))
+    asyncio.create_task(api.run(frameserver, db))
     #apithread = threading.Thread(target = lambda x: api.start(x), args=(frameserver,))
     #apithread.start()
     

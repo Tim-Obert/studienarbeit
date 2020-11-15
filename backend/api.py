@@ -1,7 +1,7 @@
+from dbconnector import DBConnector
 import os
 from videowriter import VideoWriter
 from frameserver import FrameServer
-from cameraregistry import CameraRegistry
 from camera import Camera
 from aiohttp import web, MultipartWriter
 from aiortc import RTCPeerConnection, RTCSessionDescription
@@ -15,7 +15,7 @@ import io
 import asyncio
 
 frameserver = None
-cameraregistry = None
+db = None
 pcs = set()
 
 async def multi(request):
@@ -81,7 +81,7 @@ async def offer(request):
             await pc.close()
             pcs.discard(pc)
 
-    cam = cameraregistry.get_camera_by_name(params['name'])
+    cam = db.get_camera(params['name'])
     player = MediaPlayer(cam.url, options={"rtsp_transport": "tcp"})#frameserver.get_player(cam.name)
 
     await pc.setRemoteDescription(offer)
@@ -104,26 +104,24 @@ async def offer(request):
 async def addCamera(request):
     params = await request.json()
     cam = Camera(params['name'], params['url'])
-    cameraregistry.add_camera(cam)
+    db.insert_camera(cam)
     asyncio.create_task(frameserver.capture(cam))
     return web.Response(status=201)
 
 async def getCameras(request):
     return web.Response(
         content_type="application/json",
-        text=json.dumps(
-            cameraregistry.get_cameras()
-        ),
+        text=json.dumps(db.get_cameras(), default=lambda o: o.__dict__),
     )
 async def deleteCamera(request):
     params = await request.json()
-    cameraregistry.delete_camera(params['name'])
+    db.delete_camera(params['name'])
     return web.Response(status=204)
 
-async def run(fs: FrameServer, cr: CameraRegistry):
-    global frameserver, cameraregistry
+async def run(fs: FrameServer, database: DBConnector):
+    global frameserver, db
     frameserver = fs
-    cameraregistry = cr
+    db = database
 
     app = web.Application()
     app.router.add_get("/", multi)
