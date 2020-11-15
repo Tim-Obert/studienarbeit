@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
+from dbconnector import DBConnector
 from framebuffer import FrameBuffer
 from camera import Camera
 from motiondetection.motiondetectionresult import MotionDetectionResult
-from cameraregistry import CameraRegistry
 from frameserver import FrameServer
 import asyncio
 
@@ -11,8 +11,8 @@ class MotionDetector(ABC):
 
     on_result_handler = None
 
-    def __init__(self, cameraregistry: CameraRegistry, frameserver: FrameServer):
-        self.cameraregistry = cameraregistry
+    def __init__(self, db: DBConnector, frameserver: FrameServer):
+        self.db = db
         self.frameserver = frameserver
         pass
 
@@ -20,7 +20,7 @@ class MotionDetector(ABC):
         while True:
             await self._on_before_analyze()
 
-            for cam in self.cameraregistry.get_cameras():
+            for cam in self.db.get_cameras():
                 res = await self._analyze(cam, self.frameserver.get_buffer(cam.name))
                 await self._on_result(res)
                 if self.on_result_handler is not None:

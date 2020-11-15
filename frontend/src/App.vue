@@ -7,6 +7,7 @@
         >
             <v-btn to="/" text>Home</v-btn>
             <v-btn to="/overview" text>Overview</v-btn>
+            <v-btn to="/recorded" text>Recorded</v-btn>
         </v-app-bar>
         <v-main>
             <v-container fluid>
