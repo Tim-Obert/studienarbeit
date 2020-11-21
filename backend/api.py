@@ -26,10 +26,16 @@ async def test(request):
     return web.Response(content_type="text/html", text=content)
 
 async def save(request):
-    frames = frameserver.get_buffer("Cam1").get_frames()
-    writer = VideoWriter("/mnt/c/Users/Hannes/Desktop/studienarbeit/backend/out.mp4")
-    writer.write(frames)
-    last = frames[0]
+    buffer = frameserver.get_buffer("Cam1")
+    writer = VideoWriter("out.mp4")
+    writer.open()
+    writer.write_frames(buffer.get_frames())
+    subscription = buffer.get_observable().subscribe(on_next=lambda f: writer.write_frame(f))
+    await asyncio.sleep(10)
+    subscription.dispose()
+    writer.close()
+
+    last = buffer.get_frames()[-1]
     if (last == None):
         return web.Response(content_type="text/html", text="No Frame")
     output = io.BytesIO()

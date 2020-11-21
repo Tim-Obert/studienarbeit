@@ -3,11 +3,12 @@ from framebuffer import FrameBuffer
 import cv2 as cv
 import asyncio
 from aiortc.contrib.media import MediaPlayer
+import typing
 
 class FrameServer:
 
-    __players = dict()
-    __buffers = dict()
+    __players: typing.Dict[str, MediaPlayer] = dict()
+    __buffers: typing.Dict[str, FrameBuffer] = dict()
     frametime = 1/100
 
     def __init__(self):
@@ -21,7 +22,7 @@ class FrameServer:
         #    self.buff[cam.name] = frame
         #    await asyncio.sleep(self.frametime)
         player = MediaPlayer(cam.url, options={"rtsp_transport": "tcp"})
-        self.__buffers[cam.name] = FrameBuffer(1000)
+        self.__buffers[cam.name] = FrameBuffer(100)
         self.__players[cam.name] = player
         while(1):
             frame = await player.video.recv()

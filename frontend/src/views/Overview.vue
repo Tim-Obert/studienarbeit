@@ -55,20 +55,24 @@
       AddCameraDialog,
       DeleteCameraDialog
     },
-      data: function () {
-          return {
-              cameras: [],
-              streamPath: "http://localhost:5000/streams/",
-              dialog: false,
-          }
-      },
+    data: function () {
+        return {
+            cameras: [],
+            streamPath: "http://localhost:5000/streams/",
+            dialog: false,
+        }
+    },
     created: function () {
         fetch('http://localhost:8080/cameras')
-            .then((response) => response.json())
-            .then((data) => {
-                console.log(data)
-                this.$data.cameras = data;
-            })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log(data)
+            this.$data.cameras = data;
+        });
+        const connection = new WebSocket('ws://localhost:5678')
+        connection.onmessage = function (event: MessageEvent) {
+            console.log(event.data);
+        };
     }
   })
   export default class Overview extends Vue {}

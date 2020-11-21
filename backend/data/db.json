@@ -1,1 +1,1 @@
-{"cameras": {"1": {"name": "test", "url": "/mnt/c/Users/Hannes/Desktop/video.mp4"}}}
+{"cameras": {"1": {"name": "Cam1", "url": "rtsp://192.168.1.105:5540/ch0"}}}
