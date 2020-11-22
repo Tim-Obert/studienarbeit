@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from camera import Camera
+from models.camera import Camera
+from models.settings import Settings
 from typing import List
 
 class DBConnector(ABC):
@@ -26,4 +27,14 @@ class DBConnector(ABC):
 
     @abstractmethod
     def delete_camera(self, name: str):
+        pass
+
+    #Settings
+    
+    @abstractmethod
+    def get_settings(self) -> Settings:
+        pass
+
+    @abstractmethod
+    def update_settings(self, setting: Settings):
         pass

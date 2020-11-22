@@ -1,4 +1,4 @@
-from camera import Camera
+from models.camera import Camera
 
 
 class MotionDetectionResult:

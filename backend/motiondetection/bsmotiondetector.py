@@ -1,6 +1,6 @@
 from motiondetection.motiondetector import MotionDetector
 from motiondetection.motiondetectionresult import MotionDetectionResult
-from camera import Camera
+from models.camera import Camera
 from framebuffer import FrameBuffer
 
 """

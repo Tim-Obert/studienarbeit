@@ -1,4 +1,4 @@
-from camera import Camera
+from models.camera import Camera
 from framebuffer import FrameBuffer
 import cv2 as cv
 import asyncio

@@ -13,5 +13,5 @@ import RTCStream from '@/components/RCTStream.vue'
     RTCStream
   },
 })
-export default class Home extends Vue {}
+export default class SingleStream extends Vue {}
 </script>

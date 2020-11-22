@@ -66,7 +66,6 @@
         fetch('http://localhost:8080/cameras')
             .then((response) => response.json())
             .then((data) => {
-                console.log(data)
                 this.$data.cameras = data;
             })
     }
