@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 from motiondetection.motiondetector import MotionDetector
 from tinydbconnector import TinyDBConnector
 from camera import Camera
@@ -15,7 +16,8 @@ websocketserver = WebsocketServer(frameserver)
 recorder = Recorder(frameserver)
 
 async def run():
-    for cam in db.get_cameras():
+    cameras = db.get_cameras()
+    for cam in cameras:
         asyncio.create_task(frameserver.capture(cam))
 
     motiondetector = BSMotionDetector(db, frameserver)
@@ -31,7 +33,7 @@ async def motion_result_handler(result: MotionDetectionResult):
     print(msg)
     await websocketserver.broadcast(msg)
     if result.motion:
-        await recorder.start_capture(db.get_cameras()[0], RecordingTrigger.MOTION)
+        await recorder.capture_while_motion(result.camera, RecordingTrigger.MOTION, 10)
 
 if (__name__ == "__main__"):
     asyncio.get_event_loop().create_task(run())

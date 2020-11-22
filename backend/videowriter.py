@@ -9,7 +9,6 @@ class VideoWriter:
         self.__output: av.OutputContainer = av.open(self.file, 'w')
 
     def write_frame(self, frame: av.VideoFrame) -> None:
-        print("writing 1 frame to file")
         if frame is None:
             return
 
@@ -17,7 +16,6 @@ class VideoWriter:
         self.__mux(frame)
 
     def write_frames(self, frames: List[av.VideoFrame]) -> None:
-        print("writing " + str(len(frames)) + " frames to file")
         frames = [frame for frame in frames if frame is not None]
 
         self.__try_add_stream(frames[0])
