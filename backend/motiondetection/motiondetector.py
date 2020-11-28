@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dbconnector import DBConnector
 from framebuffer import FrameBuffer
-from camera import Camera
+from models.camera import Camera
 from motiondetection.motiondetectionresult import MotionDetectionResult
 from frameserver import FrameServer
 import asyncio

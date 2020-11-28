@@ -1,6 +1,6 @@
 import asyncio
 from tinydbconnector import TinyDBConnector
-from camera import Camera
+from models.camera import Camera
 from frameserver import FrameServer
 from websocketserver import WebsocketServer
 from motiondetection.bsmotiondetector import BSMotionDetector
@@ -13,12 +13,13 @@ async def run():
 
     frameserver = FrameServer()
     websocketserver = WebsocketServer(frameserver)
+    print(db.get_settings())
 
     for cam in db.get_cameras():
         asyncio.create_task(frameserver.capture(cam))
 
     motiondetector = BSMotionDetector(db, frameserver)
-    motiondetector.on_result_handler = lambda result: print("result from " + result.camera.name + ": " + str(result.motion)) 
+    #motiondetector.on_result_handler = lambda result: print("result from " + result.camera.name + ": " + str(result.motion)) 
     asyncio.create_task(motiondetector.run())
 
     asyncio.create_task(websocketserver.run())

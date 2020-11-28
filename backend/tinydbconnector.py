@@ -1,12 +1,14 @@
 from dbconnector import DBConnector
 from tinydb import TinyDB, Query
-from camera import Camera
+from models.camera import Camera
+from models.settings import Settings
 from typing import List
 
 class TinyDBConnector(DBConnector):
     def __init__(self, path: str) -> None:
         self.path = path
         self.__cameras = TinyDB(self.path).table('cameras')
+        self.__settings = TinyDB(self.path).table('settings')
 
     def get_cameras(self) -> List[Camera]:
         return [Camera(data['name'], data['url']) for data in self.__cameras.all()]
@@ -24,3 +26,12 @@ class TinyDBConnector(DBConnector):
 
     def delete_camera(self, name: str):
         self.__cameras.remove(Query().name == name)
+
+
+ # Settings
+    def get_settings(self) -> Settings:
+        data = self.__settings.get(doc_id=0)
+        return Settings(data['frame_buffer_size'], data['video_path'])
+
+    def update_settings(self, settings: Settings):
+        self.__settings.update(settings.__dict__, doc_ids=[0])

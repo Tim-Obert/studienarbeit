@@ -4,6 +4,7 @@ import Home from '../views/Home.vue'
 import Overview from "@/views/Overview.vue";
 import Recorded from "@/views/Recorded.vue";
 import SingleStream from "@/views/SingleStream.vue";
+import Settings from "@/views/Settings.vue";
 
 Vue.use(VueRouter)
 
@@ -27,6 +28,11 @@ const routes: Array<RouteConfig> = [
     path: '/stream/:id',
     name: 'SingleStream',
     component: SingleStream
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: Settings
   }
 ]
 

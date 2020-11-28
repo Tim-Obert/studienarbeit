@@ -1,7 +1,6 @@
 <template>
   <div class="home">
     Home
-    <RTCStream name="Cam1" :useStun="true" :autoplay="true"/>
   </div>
 </template>
 

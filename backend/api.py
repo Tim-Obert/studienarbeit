@@ -2,7 +2,8 @@ from dbconnector import DBConnector
 import os
 from videowriter import VideoWriter
 from frameserver import FrameServer
-from camera import Camera
+from models.camera import Camera
+from models.settings import Settings
 from aiohttp import web, MultipartWriter
 from aiortc import RTCPeerConnection, RTCSessionDescription
 from aiortc.contrib.media import MediaPlayer
@@ -118,6 +119,18 @@ async def deleteCamera(request):
     db.delete_camera(params['name'])
     return web.Response(status=204)
 
+async def getSettings(request):
+    return web.Response(
+        content_type="application/json",
+        text=json.dumps(db.get_settings(), default=lambda o: o.__dict__),
+    )
+
+async def updateSettings(request):
+    params = await request.json()
+    settings = Settings(params['frameBufferSize'], params['videoPath'])
+    db.update_settings(settings)
+    return web.Response(status=201)
+
 async def run(fs: FrameServer, database: DBConnector):
     global frameserver, db
     frameserver = fs
@@ -132,6 +145,8 @@ async def run(fs: FrameServer, database: DBConnector):
     app.router.add_post("/camera", addCamera)
     app.router.add_delete("/camera", deleteCamera)
     app.router.add_get("/cameras", getCameras)
+    app.router.add_get("/settings", getSettings)
+    app.router.add_put("/settings", updateSettings)
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, 'localhost', 5000)    
