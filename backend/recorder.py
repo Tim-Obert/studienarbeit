@@ -1,6 +1,6 @@
 from enum import Enum
 from rx.core.typing import Disposable
-from camera import Camera
+from models.camera import Camera
 from frameserver import FrameServer
 from videowriter import VideoWriter
 import asyncio
