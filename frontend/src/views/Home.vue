@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <template>
   <div class="home">
     Home
@@ -15,3 +16,23 @@ import RTCStream from '@/components/RCTStream.vue'
 })
 export default class Home extends Vue {}
 </script>
+=======
+<template>
+  <div class="home">
+    Home
+    <RTCStream name="Cam1" :useStun="true" :autoplay="true"/>
+  </div>
+</template>
+
+<script lang="ts">
+import { Component, Vue } from 'vue-property-decorator';
+import RTCStream from '@/components/RCTStream.vue'
+
+@Component({
+  components: {
+    RTCStream
+  },
+})
+export default class Home extends Vue {}
+</script>
+>>>>>>> origin/feature/backgroundSubtraction

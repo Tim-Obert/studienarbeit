@@ -2,7 +2,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,vscode
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,vscode
 
-data/
+data
+data/*
+recordings
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -145,6 +147,7 @@ dmypy.json
 .prof
 
 ### vscode ###
+.vscode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json

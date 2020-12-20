@@ -26,29 +26,7 @@
         components: {},
         data: function () {
             return {
-                videos: [
-                    {
-                        creationDate: "01.10.2020",
-                        paths: [
-                            require("@/assets/videos/sample-mp4-file.mp4"),
-                            require("@/assets/videos/sample-mp4-file.mp4"),
-                            require("@/assets/videos/sample-mp4-file.mp4"),
-                            require("@/assets/videos/sample-mp4-file.mp4"),
-                            require("@/assets/videos/sample-mp4-file.mp4"),
-                        ]
-                    },
-                    {
-                        creationDate: "02.11.2020",
-                        paths: [
-                            require("@/assets/videos/sample-mp4-file.mp4"),
-                            require("@/assets/videos/sample-mp4-file.mp4"),
-                            require("@/assets/videos/sample-mp4-file.mp4"),
-                            require("@/assets/videos/sample-mp4-file.mp4"),
-                            require("@/assets/videos/sample-mp4-file.mp4"),
-                        ]
-                    },
-
-                ]
+                videos: []
             }
         }
 
