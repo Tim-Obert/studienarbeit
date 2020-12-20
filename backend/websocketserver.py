@@ -23,6 +23,10 @@ class WebsocketServer:
                 break
             await socket.send(message)
 
+    async def broadcast_event(self, event: str, data):
+        evt = '{"event": "' + event + '", "data": ' + json.dumps(data, default=lambda o: o.__dict__) + '}'
+        await self.broadcast(evt)
+
     async def run(self):
         ws_server = await websockets.serve(self.__websocket_cb, "0.0.0.0", 5678)
         await ws_server.wait_closed()

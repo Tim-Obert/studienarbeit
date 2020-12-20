@@ -125,6 +125,17 @@ async def deleteCamera(request):
     db.delete_camera(params['name'])
     return web.Response(status=204)
 
+async def getRecordings(request):
+    return web.Response(
+        content_type="application/json",
+        text=json.dumps(os.listdir(db.get_settings().video_path), default=lambda o: o.__dict__),
+    )
+
+async def getRecording(request):
+    name = request.match_info['name']
+    path = db.get_settings().video_path + "/" + name
+    return web.FileResponse(path)
+
 async def getSettings(request):
     return web.Response(
         content_type="application/json",
@@ -151,6 +162,8 @@ async def run(fs: FrameServer, database: DBConnector):
     app.router.add_post("/camera", addCamera)
     app.router.add_delete("/camera", deleteCamera)
     app.router.add_get("/cameras", getCameras)
+    app.router.add_get("/recordings", getRecordings)
+    app.router.add_get("/recordings/{name}", getRecording)
     app.router.add_get("/settings", getSettings)
     app.router.add_put("/settings", updateSettings)
     runner = web.AppRunner(app)

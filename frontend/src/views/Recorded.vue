@@ -2,16 +2,14 @@
     <div class="recorded">
         <v-container>
 
-                <div v-for="(video, index) in videos" :key="index">
-
-                    {{video.creationDate}}
+                <div v-for="(recording, index) in recordings" :key="index">
                     <v-row>
-                    <div class="video" v-for="(path, index) in video.paths" :key="index">
-                        <video :src="path" controls/>
-                    </div>
-                        
+                        {{recording}}
+                        <div class="video">
+                            <video :src="'http://localhost:8080/recordings/' + recording" controls/>
+                        </div>
                     </v-row>
-                    <hr />
+                    <hr>
                 </div>
 
         </v-container>
@@ -26,11 +24,16 @@
         components: {},
         data: function () {
             return {
-                videos: []
+                recordings: []
             }
+        },
+        created: function() {
+            fetch("http://localhost:8080/recordings")
+                .then((response) => {return response.json()})
+                .then((data)  => {
+                    this.$data.recordings = data;
+                })
         }
-
-
     })
     export default class Recorded extends Vue {
     }
