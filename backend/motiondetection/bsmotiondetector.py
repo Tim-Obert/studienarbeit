@@ -29,6 +29,5 @@ class BSMotionDetector(MotionDetector):
         ret, thresh = cv2.threshold(diff, 120, 255, cv2.THRESH_BINARY)
         white = cv2.countNonZero(thresh) # alternative: mean()
 
-        #cv2.imwrite('/mnt/c/Users/Hannes/Desktop/frame.jpg', diff) 
         return MotionDetectionResult(white > 20, white, camera)
 
