@@ -39,7 +39,7 @@ async def motion_result_handler(result: MotionDetectionResult):
     print(msg)
     if result.motion:
         await websocketserver.broadcast_event("MotionResult", result)
-        #await recorder.capture_while_motion(result.camera, RecordingTrigger.MOTION, 10)
+        await recorder.capture_while_motion(result.camera, RecordingTrigger.MOTION, 10)
 
 if (__name__ == "__main__"):
     asyncio.get_event_loop().create_task(run())
