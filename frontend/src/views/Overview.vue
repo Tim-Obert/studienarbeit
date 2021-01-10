@@ -4,7 +4,7 @@
 
             <div >
                 <v-row>
-                    <div class="camera" v-for="(cam, index) in cameras" :key="index">
+                    <div class="camera" v-for="(cam, index) in cameraArray" :key="index">
                         <v-card class="mx-auto mr-5 mt-5" max-width="400">
                             <v-img :src="streamPath + cam.name"/>
                             <v-card-subtitle class="pb-0">
@@ -48,7 +48,7 @@
   import WsStreams from "@/components/WsStreams.vue";
   import AddCameraDialog from "@/components/Camera/AddCameraDialog.vue";
   import DeleteCameraDialog from "@/components/Camera/DeleteCameraDialog.vue";
-
+  import {cameraStoreMutations, cameraStoreState} from "@/store/CameraStore";
   @Component({
     components: {
       WsStreams,
@@ -57,17 +57,17 @@
     },
       data: function () {
           return {
-              cameras: [],
               streamPath: process.env.VUE_APP_BACKEND_URL + "/streams/",
               dialog: false,
           }
       },
-    created: function () {
-        fetch('http://localhost:8080/cameras')
-            .then((response) => response.json())
-            .then((data) => {
-                this.$data.cameras = data;
-            })
+      computed: {
+        cameraArray() {
+          return cameraStoreState.camerasArray;
+        }
+      },
+    created: async function () {
+        await cameraStoreMutations.getList()
     }
   })
   export default class Overview extends Vue {}

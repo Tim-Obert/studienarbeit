@@ -38,7 +38,7 @@
                             <v-text-field
                                     label="name"
                                     required
-                                    v-model="camera.name"
+                                    v-model="name"
                             ></v-text-field>
                         </v-col>
                         <v-col cols="12">
@@ -46,7 +46,7 @@
                                     label="url"
                                     type="text"
                                     required
-                                    v-model="camera.url"
+                                    v-model="url"
                             ></v-text-field>
                         </v-col>
                     </v-row>
@@ -83,7 +83,8 @@
         data: function () {
             return {
                 dialog: false,
-                camera: new Camera('',''),
+                name: '',
+                url: '',
                 error: false,
                 errorMessage: ''
             }
@@ -91,14 +92,15 @@
         },
         methods: {
             async addCamera() {
-                await cameraService.addCamera(this.camera).then((res) => {
-                    if (res.status === 201) {
-                        this.dialog = false
-                    } else {
-                        this.error = true
-                        this.errorMessage = "Error"
-                        //TODO: error handling, if backend responses with errors
-                    }
+                await cameraService.addCamera(new Camera(this.name, this.url))
+                    .then((res) => {
+                        if (res.status === 201) {
+                            this.dialog = false
+                        } else {
+                            this.error = true
+                            this.errorMessage = "Error"
+                            //TODO: error handling, if backend responses with errors
+                        }
                 }).catch((err) => {
                 this.error = true
                 this.errorMessage = "Error: " + err

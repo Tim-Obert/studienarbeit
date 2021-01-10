@@ -1,6 +1,6 @@
 export default class ApiService {
-    get(){
-        return 1
+    get(path: string, params? : Record<string, string>){
+        return fetch(process.env.VUE_APP_BASE_URL + path + "?" + new URLSearchParams(params)).then(response => response.json())
     }
 
     async post(path: string, body? : object){

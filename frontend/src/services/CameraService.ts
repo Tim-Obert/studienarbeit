@@ -1,5 +1,6 @@
 import {Camera} from "@/interfaces/CameraInterface"
 import ApiService from "@/services/ApiService"
+import {cameraStoreMutations} from "@/store/CameraStore";
 
 export default class CameraService {
     apiService = new ApiService()
@@ -7,7 +8,7 @@ export default class CameraService {
     async addCamera(camera: Camera) {
         return this.apiService.post("/camera", camera)
             .then((res) => {
-                //TODO: build store for cameras list and trigger/add-mutation rebuild here
+                cameraStoreMutations.add(camera)
                 return res;
         })
     }
@@ -15,7 +16,19 @@ export default class CameraService {
     async removeCamera(name: string) {
         return this.apiService.delete("/camera", {name: name})
             .then((res) => {
+                cameraStoreMutations.remove(name)
                 return res;
         })
+    }
+
+    async getCameras(): Promise<Array<Camera>> {
+        return await this.apiService.get("/cameras")
+            .then((responseBody) => {
+                const cameraArray = new Array<Camera>()
+                responseBody.map((cam: Camera)=>{
+                    cameraArray.push(cam)
+                })
+                return cameraArray
+            })
     }
 }
