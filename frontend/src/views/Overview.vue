@@ -58,7 +58,7 @@
       data: function () {
           return {
               cameras: [],
-              streamPath: "http://localhost:5000/streams/",
+              streamPath: process.env.VUE_APP_BACKEND_URL + "/streams/",
               dialog: false,
           }
       },

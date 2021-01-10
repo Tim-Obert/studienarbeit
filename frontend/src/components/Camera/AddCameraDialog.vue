@@ -24,13 +24,21 @@
                 <span class="headline">Add Camera</span>
             </v-card-title>
             <v-card-text>
+                <v-alert
+                        v-if="error"
+                        dense
+                        outlined
+                        type="error"
+                >
+                    {{errorMessage}}
+                </v-alert>
                 <v-container>
                     <v-row>
                         <v-col cols="12">
                             <v-text-field
                                     label="name"
                                     required
-                                    v-model="name"
+                                    v-model="camera.name"
                             ></v-text-field>
                         </v-col>
                         <v-col cols="12">
@@ -38,7 +46,7 @@
                                     label="url"
                                     type="text"
                                     required
-                                    v-model="url"
+                                    v-model="camera.url"
                             ></v-text-field>
                         </v-col>
                     </v-row>
@@ -67,32 +75,35 @@
 </template>
 
 <script>
+    import CameraService from "../../services/CameraService"
+    import {Camera} from "@/interfaces/CameraInterface";
+    const cameraService = new CameraService
     export default {
         name: "AddCameraDialog",
         data: function () {
             return {
                 dialog: false,
-                name: '',
-                url: ''
+                camera: new Camera('',''),
+                error: false,
+                errorMessage: ''
             }
 
         },
         methods: {
-            addCamera(){
-                return fetch('http://localhost:8080/camera', {
-                    body: JSON.stringify({
-                        url: this.url,
-                        name: this.name
-                    }),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    method: 'POST'
-                }).then( () => {
-                    this.dialog = false;
-                    location.reload();
-
-                });
+            async addCamera() {
+                await cameraService.addCamera(this.camera).then((res) => {
+                    if (res.status === 201) {
+                        this.dialog = false
+                    } else {
+                        this.error = true
+                        this.errorMessage = "Error"
+                        //TODO: error handling, if backend responses with errors
+                    }
+                }).catch((err) => {
+                this.error = true
+                this.errorMessage = "Error: " + err
+                //TODO: error handling, if backend responses with errors
+            })
             }
         }
     }

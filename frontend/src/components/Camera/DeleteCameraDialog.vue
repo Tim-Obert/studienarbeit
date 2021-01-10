@@ -10,6 +10,14 @@
             </v-btn>
         </template>
         <v-card>
+            <v-alert
+                    v-if="error"
+                    dense
+                    outlined
+                    type="error"
+            >
+                {{errorMessage}}
+            </v-alert>
             <v-card-title class="headline">
                 Are you sure?
             </v-card-title>
@@ -36,11 +44,16 @@
 </template>
 
 <script>
+    import CameraService from "../../services/CameraService"
+
+    const cameraService = new CameraService
     export default {
         name: "AddCameraDialog",
         data: function () {
             return {
-                dialog: false
+                dialog: false,
+                error: false,
+                errorMessage: false
             }
         },
         props:{
@@ -48,19 +61,20 @@
         },
         methods: {
             deleteCamera(){
-                return fetch('http://localhost:8080/camera', {
-                    body: JSON.stringify({
-                        name: this.name
-                    }),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    method: 'DELETE'
-                }).then(() => {
-                    this.dialog = false;
-                    location.reload();
-                });
-
+                cameraService.removeCamera(this.name)
+                    .then((res) => {
+                        if(res.status === 204) {
+                           this.dialog = false
+                        }else {
+                            this.error = true
+                            this.errorMessage = "Error"
+                            //TODO: error handling, if backend responses with errors
+                        }
+                }).catch((err) => {
+                    this.error = true
+                    this.errorMessage = "Error: " + err
+                    //TODO: error handling, if backend responses with errors
+                })
             }
         }
     }
