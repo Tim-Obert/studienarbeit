@@ -21,6 +21,11 @@ export default class CameraService {
         })
     }
 
+    async updateCamera(){
+        //TODO: Implement, if cameras ar identified via id
+        return 1
+    }
+
     async getCameras(): Promise<Array<Camera>> {
         return await this.apiService.get("/cameras")
             .then((responseBody) => {
@@ -31,4 +36,5 @@ export default class CameraService {
                 return cameraArray
             })
     }
+
 }

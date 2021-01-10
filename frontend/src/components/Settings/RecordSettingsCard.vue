@@ -4,6 +4,23 @@
 
         <v-card-text>
             <v-container fluid>
+                <v-alert
+                        v-if="error"
+                        dense
+                        outlined
+                        type="error"
+                >
+                    {{errorMessage}}
+                </v-alert>
+
+                <v-alert
+                        v-if="success"
+                        dense
+                        outlined
+                        type="success"
+                >
+                    Settings updated
+                </v-alert>
                 <v-row>
                     <v-tooltip top>
                         <template v-slot:activator="{ on, attrs }">
@@ -57,46 +74,43 @@
 </template>
 
 <script>
+    import SettingsService from "@/services/SettingsService";
+    import {Settings} from "@/interfaces/SettingsInterface";
+
+    const settingsService = new SettingsService()
     export default {
         name: "RecordSettingsCard",
         data: () => ({
-            settings: {
-                frameBufferSize: 1000,
-                videoPath: ""
-            }
+            settings: new Settings(1000, ""),
+            success: false,
+            error: false,
+            errorMessage: ""
         }),
         methods: {
-            snakeToCamel: (str) =>
-                str.replace(
-                /([-_][a-z])/g,
-                (group) => group.toUpperCase()
-                    .replace('-', '')
-                    .replace('_', '')
-            ),
             updateSettings(){
-                return fetch('http://localhost:8080/settings', {
-                    body: JSON.stringify(
-                        this.settings
-                    ),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    method: 'PUT'
-                }).then( () => {
-                    console.log(1);
-                    location.reload();
-
-                });
+                settingsService.updateSettings(this.settings).then((res) => {
+                    if (res.status === 201) {
+                        this.showAlert(true)
+                        setTimeout(() => this.success = false, 3000);
+                    }else {
+                        this.showAlert(false, 'Server failure')
+                    }
+                }).catch((err) => {
+                    this.showAlert(false, "Error: "+ err.message)
+                })
+            },
+            showAlert(success, errorMessage) {
+                this.success = success;
+                this.error = !success;
+                this.errorMessage = errorMessage;
             }
         },
         created() {
-            fetch('http://localhost:8080/settings')
-                .then((response) => {return response.json()})
-                .then((data)  => {
-                    for(const setting in data) {
-                        this.settings[this.snakeToCamel(setting)] = data[setting]
-                    }
-                })
+            settingsService.getSettings().then((res) => {
+                this.settings = res
+            }).catch((err) => {
+                this.showAlert(false, "Error: "+ err.message)
+            })
         },
     }
 </script>

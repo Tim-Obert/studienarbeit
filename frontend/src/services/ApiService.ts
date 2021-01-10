@@ -1,4 +1,5 @@
 export default class ApiService {
+
     get(path: string, params? : Record<string, string>){
         return fetch(process.env.VUE_APP_BASE_URL + path + "?" + new URLSearchParams(params)).then(response => response.json())
     }
@@ -15,8 +16,16 @@ export default class ApiService {
         })
     }
 
-    put(){
-        return 1
+    put(path: string, body? : object){
+        return fetch(process.env.VUE_APP_BASE_URL + path, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(
+                body
+            )
+        })
     }
 
     delete(path: string, body? : object){
