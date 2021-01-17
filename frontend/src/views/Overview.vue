@@ -6,13 +6,16 @@
                 <v-row>
                     <div class="camera" v-for="(cam, index) in cameraArray" :key="index">
                         <v-card class="mx-auto mr-5 mt-5" max-width="400">
-                            <v-img :src="streamPath + cam.name"/>
+                            <v-img :src="streamPath + cam.name" :id="'stream.' + cam.name"/>
                             <v-card-subtitle class="pb-0">
                                 {{cam.name}}
                             </v-card-subtitle>
 
                             <v-card-text class="text--primary">
                                 {{cam.url}}
+                            </v-card-text>
+                            <v-card-text class="text--primary">
+                                Last Motion: {{timestampToString(cam.last_motion)}}
                             </v-card-text>
                             <v-card-actions class="justify-center">
                                 <v-btn color="orange" :to="'/stream/'+cam.name" text>
@@ -55,7 +58,7 @@
       AddCameraDialog,
       DeleteCameraDialog
     },
-      data: function () {
+    data: function () {
           return {
               streamPath: process.env.VUE_APP_BACKEND_URL + "/streams/",
               dialog: false,
@@ -68,6 +71,30 @@
       },
     created: async function () {
         await cameraStoreMutations.getList()
+        fetch('http://localhost:8080/cameras')
+            .then((response) => response.json())
+            .then((data) => {
+                this.$data.cameras = data;
+            });
+
+            const connection = new WebSocket('ws://localhost:5678')
+            const self = this;
+            connection.onmessage = function (e: any) {
+                const event = JSON.parse(e.data)
+                console.log(event)
+                if (event.event == "MotionResult") {
+                    const index = self.$data.cameras.indexOf(self.$data.cameras.find((e: any) => e.name == event.data.camera.name))
+                    self.$data.cameras[index].last_motion = Date.now();
+                }
+            }
+    },
+    methods: {
+        timestampToString(timestamp: Date) {
+            if (timestamp == null) {
+                return "-";
+            }
+            return new Date(timestamp).toUTCString();
+        }
     }
   })
   export default class Overview extends Vue {}
@@ -79,5 +106,8 @@
     }
     .addBtn__wrapper .addBtn{
         width: 50px;
+    }
+    .motion {
+        border: 2px solid red
     }
 </style>

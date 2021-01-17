@@ -27,10 +27,16 @@ async def test(request):
     return web.Response(content_type="text/html", text=content)
 
 async def save(request):
-    frames = frameserver.get_buffer("Cam1").get_frames()
-    writer = VideoWriter("/mnt/c/Users/Hannes/Desktop/studienarbeit/backend/out.mp4")
-    writer.write(frames)
-    last = frames[0]
+    buffer = frameserver.get_buffer("Cam1")
+    writer = VideoWriter("out.mp4")
+    writer.open()
+    writer.write_frames(buffer.get_frames())
+    subscription = buffer.get_observable().subscribe(on_next=lambda f: writer.write_frame(f))
+    await asyncio.sleep(10)
+    subscription.dispose()
+    writer.close()
+
+    last = buffer.get_frames()[-1]
     if (last == None):
         return web.Response(content_type="text/html", text="No Frame")
     output = io.BytesIO()
@@ -119,6 +125,17 @@ async def deleteCamera(request):
     db.delete_camera(params['name'])
     return web.Response(status=204)
 
+async def getRecordings(request):
+    return web.Response(
+        content_type="application/json",
+        text=json.dumps(os.listdir(db.get_settings().video_path), default=lambda o: o.__dict__),
+    )
+
+async def getRecording(request):
+    name = request.match_info['name']
+    path = db.get_settings().video_path + "/" + name
+    return web.FileResponse(path)
+
 async def getSettings(request):
     return web.Response(
         content_type="application/json",
@@ -145,6 +162,8 @@ async def run(fs: FrameServer, database: DBConnector):
     app.router.add_post("/camera", addCamera)
     app.router.add_delete("/camera", deleteCamera)
     app.router.add_get("/cameras", getCameras)
+    app.router.add_get("/recordings", getRecordings)
+    app.router.add_get("/recordings/{name}", getRecording)
     app.router.add_get("/settings", getSettings)
     app.router.add_put("/settings", updateSettings)
     runner = web.AppRunner(app)
