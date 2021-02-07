@@ -22,7 +22,7 @@ export default class CameraService {
     }
 
     async updateCamera(){
-        //TODO: Implement, if cameras ar identified via id
+        //TODO: Implement, if cameras are identified via id
         return 1
     }
 

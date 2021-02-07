@@ -2,7 +2,7 @@
     <div class="overview">
         <v-container>
 
-            <div >
+            <div>
                 <v-row>
                     <div class="camera" v-for="(cam, index) in cameraArray" :key="index">
                         <v-card class="mx-auto mr-5 mt-5" max-width="400">
@@ -34,7 +34,7 @@
                     <div class="camera__add">
                         <v-card class="mx-auto mr-5 mt-5" width="320" height="240">
                             <v-card-actions class="addBtn__wrapper justify-center align-center">
-                                <AddCameraDialog />
+                                <AddCameraDialog/>
                             </v-card-actions>
                         </v-card>
                     </div>
@@ -47,66 +47,63 @@
 </template>
 
 <script lang="ts">
-  import { Component, Vue } from 'vue-property-decorator';
-  import WsStreams from "@/components/WsStreams.vue";
-  import AddCameraDialog from "@/components/Camera/AddCameraDialog.vue";
-  import DeleteCameraDialog from "@/components/Camera/DeleteCameraDialog.vue";
-  import {cameraStoreMutations, cameraStoreState} from "@/store/CameraStore";
-  @Component({
-    components: {
-      WsStreams,
-      AddCameraDialog,
-      DeleteCameraDialog
-    },
-    data: function () {
-          return {
-              streamPath: process.env.VUE_APP_BACKEND_URL + "/streams/",
-              dialog: false,
-          }
-      },
-      computed: {
-        cameraArray() {
-          return cameraStoreState.camerasArray;
-        }
-      },
-    created: async function () {
-        await cameraStoreMutations.getList()
-        fetch('http://localhost:8080/cameras')
-            .then((response) => response.json())
-            .then((data) => {
-                this.$data.cameras = data;
-            });
+    import {Component, Vue} from 'vue-property-decorator';
+    import WsStreams from "@/components/WsStreams.vue";
+    import AddCameraDialog from "@/components/Camera/AddCameraDialog.vue";
+    import DeleteCameraDialog from "@/components/Camera/DeleteCameraDialog.vue";
+    import {cameraStoreMutations, cameraStoreState} from "@/store/CameraStore";
 
+    @Component({
+        components: {
+            WsStreams,
+            AddCameraDialog,
+            DeleteCameraDialog
+        },
+        data: function () {
+            return {
+                streamPath: process.env.VUE_APP_BACKEND_URL + "/streams/",
+                dialog: false,
+            }
+        },
+        computed: {
+            cameraArray() {
+                return cameraStoreState.camerasArray;
+            }
+        },
+        created: async function () {
+            await cameraStoreMutations.getList()
+
+            //WS-Socket for Motion
             const connection = new WebSocket('ws://localhost:5678')
-            const self = this;
             connection.onmessage = function (e: any) {
                 const event = JSON.parse(e.data)
-                console.log(event)
                 if (event.event == "MotionResult") {
-                    const index = self.$data.cameras.indexOf(self.$data.cameras.find((e: any) => e.name == event.data.camera.name))
-                    self.$data.cameras[index].last_motion = Date.now();
+                    cameraStoreMutations.get(event.data.camera.name).last_motion = Date.now();
                 }
             }
-    },
-    methods: {
-        timestampToString(timestamp: Date) {
-            if (timestamp == null) {
-                return "-";
+        },
+        methods: {
+            timestampToString(timestamp: Date) {
+                if (timestamp == null) {
+                    return "-";
+                }
+                return new Date(timestamp).toUTCString();
             }
-            return new Date(timestamp).toUTCString();
         }
+    })
+    export default class Overview extends Vue {
     }
-  })
-  export default class Overview extends Vue {}
 </script>
 
 <style>
-    .addBtn__wrapper{
+    .addBtn__wrapper {
         height: 100%
     }
-    .addBtn__wrapper .addBtn{
+
+    .addBtn__wrapper .addBtn {
         width: 50px;
     }
+
     .motion {
         border: 2px solid red
     }
