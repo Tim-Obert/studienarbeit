@@ -6,6 +6,7 @@ from models.camera import Camera
 from frameserver import FrameServer
 from websocketserver import WebsocketServer
 from motiondetection.bsmotiondetector import BSMotionDetector, MotionDetectionResult
+from motiondetection.persondetector import PersonDetector
 from recorder import Recorder, RecordingTrigger
 import api
 import threading
@@ -26,7 +27,7 @@ async def run():
     for cam in cameras:
         asyncio.create_task(frameserver.capture(cam))
 
-    motiondetector = BSMotionDetector(db, frameserver)
+    motiondetector = PersonDetector(db, frameserver)
     motiondetector.run().subscribe(on_next=lambda res: asyncio.create_task(motion_result_handler(res)))
 
     asyncio.create_task(websocketserver.run())
