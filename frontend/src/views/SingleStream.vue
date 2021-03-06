@@ -1,6 +1,6 @@
 <template>
   <div class="singleStream">
-    <RTCStream :name="$route.params.id" :useStun="true" :autoplay="true"/>
+    <RTCStream :id="$route.params.id" :useStun="true" :autoplay="true"/>
   </div>
 </template>
 

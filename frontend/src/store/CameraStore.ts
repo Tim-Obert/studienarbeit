@@ -10,14 +10,14 @@ export const cameraStoreMutations = {
     add: (camera: Camera) => {
         cameraStoreState.camerasArray.push(camera)
     },
-    remove: (name: string) => {
+    remove: (id: number) => {
         const removeIndex = cameraStoreState.camerasArray.map((cam) => {
-            return cam.name
-        }).indexOf(name)
+            return cam.id
+        }).indexOf(id)
         cameraStoreState.camerasArray.splice(removeIndex, 1)
     },
-    get: (name: string) => {
-        const index = cameraStoreState.camerasArray.indexOf(cameraStoreState.camerasArray.find((e: any) => e.name == name) as Camera)
+    get: (id: number) => {
+        const index = cameraStoreState.camerasArray.indexOf(cameraStoreState.camerasArray.find((e: any) => e.id == id) as Camera)
         return cameraStoreState.camerasArray[index]
     },
     getList: async () => {

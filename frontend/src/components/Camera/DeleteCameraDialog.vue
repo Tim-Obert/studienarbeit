@@ -21,7 +21,7 @@
             <v-card-title class="headline">
                 Are you sure?
             </v-card-title>
-            <v-card-text>Do you really want to delete <strong>{{name}}</strong>?</v-card-text>
+            <v-card-text>Do you really want to delete <strong>{{cam.name}}</strong>?</v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn
@@ -45,6 +45,7 @@
 
 <script>
     import CameraService from "../../services/CameraService"
+    import {Camera} from "@/interfaces/CameraInterface";
 
     const cameraService = new CameraService
     export default {
@@ -57,11 +58,11 @@
             }
         },
         props:{
-          name: String
+          cam: Object
         },
         methods: {
             deleteCamera(){
-                cameraService.removeCamera(this.name)
+                cameraService.removeCamera(this.cam.id)
                     .then((res) => {
                         if(res.status === 204) {
                            this.dialog = false

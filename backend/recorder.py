@@ -29,7 +29,7 @@ class Recorder:
         if cam.name in self.__recording:
             return
 
-        buffer = self.__frameserver.get_buffer(cam.name)
+        buffer = self.__frameserver.get_buffer(cam.id)
         writer = VideoWriter(self.__generate_name(cam, trigger))
         writer.open()
         if with_buffer:

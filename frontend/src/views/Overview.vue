@@ -4,9 +4,9 @@
 
             <div>
                 <v-row>
-                    <div class="camera" v-for="(cam, index) in cameraArray" :key="index">
+                    <div class="camera" v-for="cam in cameraArray" :key="cam.id">
                         <v-card class="mx-auto mr-5 mt-5" max-width="400">
-                            <v-img :src="streamPath + cam.name" :id="'stream.' + cam.name"/>
+                            <v-img :src="streamPath + cam.id" :id="'stream.' + cam.name"/>
                             <v-card-subtitle class="pb-0">
                                 {{cam.name}}
                             </v-card-subtitle>
@@ -18,7 +18,7 @@
                                 Last Motion: {{timestampToString(cam.last_motion)}}
                             </v-card-text>
                             <v-card-actions class="justify-center">
-                                <v-btn color="orange" :to="'/stream/'+cam.name" text>
+                                <v-btn color="orange" :to="'/stream/'+cam.id" text>
                                     Open
                                 </v-btn>
 
@@ -26,7 +26,7 @@
                                     Edit
                                 </v-btn>
 
-                                <DeleteCameraDialog :name="cam.name"/>
+                                <DeleteCameraDialog :cam="cam"/>
                             </v-card-actions>
                         </v-card>
                     </div>
@@ -78,7 +78,7 @@
             connection.onmessage = function (e: any) {
                 const event = JSON.parse(e.data)
                 if (event.event == "MotionResult") {
-                    cameraStoreMutations.get(event.data.camera.name).last_motion = Date.now();
+                    cameraStoreMutations.get(event.data.camera.id).last_motion = Date.now();
                 }
             }
         },

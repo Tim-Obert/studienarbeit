@@ -46,4 +46,4 @@ class VideoWriter:
             try:
                 self.__output.mux(opacket)
             except Exception:
-                print('mux failed: ' + str(opacket))
+                a=1
