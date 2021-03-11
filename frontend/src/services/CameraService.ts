@@ -23,9 +23,12 @@ export default class CameraService {
         })
     }
 
-    async updateCamera(){
-        //TODO: Implement, if cameras are identified via id
-        return 1
+    async updateCamera(camera: Camera){
+        return this.apiService.put("/camera", {camera: camera})
+            .then((res) => {
+                cameraStoreMutations.update(camera)
+                return res;
+            })
     }
 
     async getCameras(): Promise<Array<Camera>> {
@@ -33,7 +36,7 @@ export default class CameraService {
         return await this.apiService.get("/cameras")
             .then((responseBody) => {
                 responseBody.map((cam: Camera)=>{
-                    cameraArray.push(cam)
+                    cameraArray.push(new Camera(cam.id, cam.name, cam.url, cam.last_motion))
                 })
                 return cameraArray
             }).catch(() => {

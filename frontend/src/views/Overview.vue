@@ -15,7 +15,7 @@
                                 {{cam.url}}
                             </v-card-text>
                             <v-card-text class="text--primary">
-                                Last Motion: {{timestampToString(cam.last_motion)}}
+                                Last Motion: {{cam.getLastMotionAsDateString()}}
                             </v-card-text>
                             <v-card-actions class="justify-center">
                                 <v-btn color="orange" :to="'/stream/'+cam.id" text>
@@ -23,7 +23,7 @@
                                 </v-btn>
 
                                 <v-btn color="orange" text>
-                                    Edit
+                                    <EditCameraDialog :cam="cam"/>
                                 </v-btn>
 
                                 <DeleteCameraDialog :cam="cam"/>
@@ -52,9 +52,11 @@
     import AddCameraDialog from "@/components/Camera/AddCameraDialog.vue";
     import DeleteCameraDialog from "@/components/Camera/DeleteCameraDialog.vue";
     import {cameraStoreMutations, cameraStoreState} from "@/store/CameraStore";
+    import EditCameraDialog from "@/components/Camera/EditCameraDialog.vue";
 
     @Component({
         components: {
+          EditCameraDialog,
             WsStreams,
             AddCameraDialog,
             DeleteCameraDialog
@@ -72,7 +74,6 @@
         },
         created: async function () {
             await cameraStoreMutations.getList()
-
             //WS-Socket for Motion
             const connection = new WebSocket('ws://localhost:5678')
             connection.onmessage = function (e: any) {
@@ -82,14 +83,6 @@
                 }
             }
         },
-        methods: {
-            timestampToString(timestamp: Date) {
-                if (timestamp == null) {
-                    return "-";
-                }
-                return new Date(timestamp).toUTCString();
-            }
-        }
     })
     export default class Overview extends Vue {
     }

@@ -3,6 +3,7 @@ export interface CameraInterface {
     name: string;
     url: string;
     last_motion: number | null;
+
 }
 
 export class Camera implements CameraInterface{
@@ -17,4 +18,12 @@ export class Camera implements CameraInterface{
         this.url = url
         this.last_motion = last_motion
     }
+
+    public getLastMotionAsDateString(): string {
+            if (this.last_motion == null) {
+                return "-"
+            }
+            return new Date(this.last_motion).toUTCString();
+    }
+
 }

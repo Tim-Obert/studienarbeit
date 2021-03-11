@@ -45,7 +45,6 @@
 
 <script>
     import CameraService from "../../services/CameraService"
-    import {Camera} from "@/interfaces/CameraInterface";
 
     const cameraService = new CameraService
     export default {

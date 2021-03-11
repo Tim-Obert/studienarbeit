@@ -114,6 +114,16 @@ async def addCamera(request):
     asyncio.create_task(frameserver.capture(cam))
     return web.Response(status=201, text=json.dumps({'id': id}))
 
+async def updateCamera(request):
+    params = await request.json()
+    cam = params['camera']
+    old_cam = db.get_camera(cam['id'])
+    if cam['name'] != old_cam.name and len(cam['name']) > 0:
+        old_cam.name = cam['name']
+
+    db.update_camera(cam['id'], old_cam)
+    return web.Response(status=201)
+
 async def getCameras(request):
     return web.Response(
         content_type="application/json",
@@ -160,6 +170,7 @@ async def run(fs: FrameServer, database: DBConnector):
     app.router.add_get("/streams/{id}", single)
     app.router.add_post("/webrtc/offer", offer)
     app.router.add_post("/camera", addCamera)
+    app.router.add_put("/camera", updateCamera)
     app.router.add_delete("/camera", deleteCamera)
     app.router.add_get("/cameras", getCameras)
     app.router.add_get("/recordings", getRecordings)
