@@ -16,7 +16,7 @@ class PersonDetector(MotionDetector):
 
     
     async def _analyze(self, camera: Camera, buffer: FrameBuffer) -> MotionDetectionResult:
-        frame = buffer.get_latest_frame()
+        frame = buffer.get_latest_packet()
         if frame == None:
             return MotionDetectionResult(False, 0, camera)
         img = cv2.cvtColor(frame.to_rgb().to_ndarray(), cv2.COLOR_BGR2RGB)
@@ -24,14 +24,15 @@ class PersonDetector(MotionDetector):
         hog = cv2.HOGDescriptor()
         hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
-        boxes, weights = hog.detectMultiScale(img, winStride=(8,8))
-        if len(boxes) == 0:
+        bounding_boxes, weights = hog.detectMultiScale(img, winStride=(8,8))
+        if len(bounding_boxes) == 0:
             return MotionDetectionResult(False, 0, camera)    
 
-        for (x, y, w, h) in boxes:
-	        cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
+        #boxes = []
+        #for (x, y, w, h) in bounding_boxes:
+        #    boxes.append((x,y,w,h))
+	        #cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
         #cv2.imwrite("./recordings/res" + str(self.count) + ".png", img)
-        self.count += 1
-        return MotionDetectionResult(True, 50, camera)
+        #self.count += 1
+        return MotionDetectionResult(True, 50, camera, [[int(x),int(y),int(w),int(h)] for (x,y,w,h) in bounding_boxes])
 

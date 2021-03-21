@@ -27,20 +27,19 @@ async def run():
     for cam in cameras:
         asyncio.create_task(frameserver.capture(cam))
 
-    motiondetector = PersonDetector(db, frameserver)
-    motiondetector.run().subscribe(on_next=lambda res: asyncio.create_task(motion_result_handler(res)))
+    #motiondetector = BSMotionDetector(db, frameserver)
+    #motiondetector.run().subscribe(on_next=lambda res: asyncio.create_task(motion_result_handler(res)))
 
     asyncio.create_task(websocketserver.run())
     asyncio.create_task(api.run(frameserver, db))
-    #apithread = threading.Thread(target = lambda x: api.start(x), args=(frameserver,))
-    #apithread.start()
 
 async def motion_result_handler(result: MotionDetectionResult):
     msg = "result from " + result.camera.name + ": " + str(result.motion) + " (Magnitude: " + str(result.intensity) + ")"
     print(msg)
+    await websocketserver.broadcast_event("MotionResult", result)
     if result.motion:
-        await websocketserver.broadcast_event("MotionResult", result)
-        await recorder.capture_while_motion(result.camera, RecordingTrigger.MOTION, 10)
+        #await recorder.capture_while_motion(result.camera, RecordingTrigger.MOTION, 10)
+        pass
 
 if (__name__ == "__main__"):
     asyncio.get_event_loop().create_task(run())

@@ -6,7 +6,10 @@
                 <v-row>
                     <div class="camera" v-for="(cam, index) in cameraArray" :key="index">
                         <v-card class="mx-auto mr-5 mt-5" max-width="400">
-                            <v-img :src="streamPath + cam.name" :id="'stream.' + cam.name"/>
+                            <div style="position: relative">
+                                <img :src="streamPath + cam.name" :id="'stream.' + cam.name" width="100%"/>
+                                <canvas :id="'overlay.' + cam.name" style="position: absolute; width: 100%; height: 100%; left: 0; top: 0;"></canvas>
+                            </div>
                             <v-card-subtitle class="pb-0">
                                 {{cam.name}}
                             </v-card-subtitle>
@@ -75,10 +78,27 @@
 
             //WS-Socket for Motion
             const connection = new WebSocket('ws://localhost:5678')
-            connection.onmessage = function (e: any) {
+            connection.onmessage = (e: any) => {
                 const event = JSON.parse(e.data)
                 if (event.event == "MotionResult") {
                     cameraStoreMutations.get(event.data.camera.name).last_motion = Date.now();
+                    
+                    const image = document.getElementById('stream.' + event.data.camera.name) as HTMLImageElement;
+                    const scale = image.width / image.naturalWidth;
+                    const canvas = document.getElementById('overlay.' + event.data.camera.name) as HTMLCanvasElement;
+                    const ctx = canvas?.getContext('2d');
+                    if (ctx === null) {
+                        return;
+                    }
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = 'blue';
+                    event.data.boxes.forEach((box: number[]) => {
+                        box = box.map(x => x*scale);
+                        ctx.lineWidth = 5;
+                        ctx.strokeStyle = 'green';
+                        console.log(box);
+                        ctx.strokeRect(box[0], box[1], box[2], -box[3]);
+                    });
                 }
             }
         },

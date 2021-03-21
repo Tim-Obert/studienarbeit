@@ -33,8 +33,8 @@ class Recorder:
         writer = VideoWriter(self.__generate_name(cam, trigger))
         writer.open()
         if with_buffer:
-            writer.write_frames(buffer.get_frames())
-        subscription = buffer.get_observable().subscribe(on_next=lambda f: writer.write_frame(f))
+            writer.write_packets(buffer.get_packets())
+        subscription = buffer.get_observable().subscribe(on_next=lambda p: writer.write_packet(p))
         self.__recording[cam.name] = ActiveRecording(writer, subscription)
 
     def stop_capture(self, cam: Camera):

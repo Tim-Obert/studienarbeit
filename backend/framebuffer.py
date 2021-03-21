@@ -21,7 +21,7 @@ class FrameBuffer:
             l.append(l.pop(0))
         return l
 
-    def add(self, item: av.VideoFrame):
+    def add(self, item: av.Packet):
         if self.__index + 1 < self.__n:
             self.__index += 1
         else:
@@ -30,11 +30,18 @@ class FrameBuffer:
         if self.__observer is not None:
             self.__observer.on_next(item)
 
-    def get_frames(self) -> List[av.VideoFrame]:
-        return [frame for frame in self.__shift_to_sorted(self.__buffer) if frame is not None]
+    def get_packets(self) -> List[av.Packet]:
+        return [packet for packet in self.__shift_to_sorted(self.__buffer) if packet is not None]
 
-    def get_latest_frame(self) -> av.VideoFrame:
+    def get_latest_packet(self) -> av.Packet:
         return self.__buffer[self.__index]
+
+    def get_latest_keyframe(self) -> av.Packet:
+        keyframes = [x for x in self.__shift_to_sorted(self.__buffer) if x is not None and x.is_keyframe]
+        if (len(keyframes) > 0):
+            return keyframes[0]
+        else:
+            return None
 
     def get_index(self) -> int:
         return self.__index

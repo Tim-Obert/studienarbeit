@@ -27,25 +27,52 @@ async def test(request):
     return web.Response(content_type="text/html", text=content)
 
 async def save(request):
-    buffer = frameserver.get_buffer("Cam1")
-    writer = VideoWriter("out.mp4")
+    buffer = frameserver.get_buffer("test")
+    writer = VideoWriter("/home/hannes/Projekte/studienarbeit/test/out.mp4")
     writer.open()
-    writer.write_frames(buffer.get_frames())
-    subscription = buffer.get_observable().subscribe(on_next=lambda f: writer.write_frame(f))
+    writer.write_packets(buffer.get_packets())
+    subscription = buffer.get_observable().subscribe(on_next=lambda p: writer.write_packet(p))
     await asyncio.sleep(10)
     subscription.dispose()
     writer.close()
 
-    last = buffer.get_frames()[-1]
+    last = buffer.get_packets()[-1]
     if (last == None):
         return web.Response(content_type="text/html", text="No Frame")
     output = io.BytesIO()
-    frame = last.to_image()
+    frame = last.decode()[0].to_image()
     frame.save(output, format='PNG')
     output.seek(0)
     output_s = output.read()
     b64 = b64encode(output_s)
     return web.Response(content_type="text/html", text="<img src='data:image/png;base64," + str(b64)[2:-1] + "'>")
+
+async def single_frame(request):
+    name = request.match_info['name']
+    response = web.StreamResponse(status=200, reason='OK', headers={
+        'Content-Type': 'multipart/x-mixed-replace; '
+                        'boundary=--frame',
+    })
+    await response.prepare(request)
+    buffer = frameserver.get_buffer(name)
+    last = 0
+    while True:
+        with MultipartWriter('image/jpeg', boundary="frame") as mpwriter:
+            frame = buffer.get_latest_packet()
+            if frame is not None:
+                data = frame.to_image()
+
+                img_byte_arr = io.BytesIO()
+                data.save(img_byte_arr, format='JPEG')
+                img_byte_arr = img_byte_arr.getvalue()
+
+                mpwriter.append(img_byte_arr, {
+                    'Content-Type': 'image/jpeg'
+                })
+                await mpwriter.write(response, False)
+            await asyncio.sleep(1/15)
+        await response.drain()
+    return response
 
 async def single(request):
     name = request.match_info['name']
@@ -55,22 +82,26 @@ async def single(request):
     })
     await response.prepare(request)
     buffer = frameserver.get_buffer(name)
+    last = 0
     while True:
         with MultipartWriter('image/jpeg', boundary="frame") as mpwriter:
-            frame = buffer.get_latest_frame()
-            if frame == None:
-                continue
-            data = frame.to_image()
+            packet = buffer.get_latest_keyframe()
+            if packet is not None and packet.pts > last:
+                last = packet.pts
+                frame = packet.decode()
+                if len(frame) == 0:
+                    continue
+                data = frame[0].to_image()
 
-            img_byte_arr = io.BytesIO()
-            data.save(img_byte_arr, format='JPEG')
-            img_byte_arr = img_byte_arr.getvalue()
+                img_byte_arr = io.BytesIO()
+                data.save(img_byte_arr, format='JPEG')
+                img_byte_arr = img_byte_arr.getvalue()
 
-            mpwriter.append(img_byte_arr, {
-                'Content-Type': 'image/jpeg'
-            })
-            await mpwriter.write(response, False)
-            await asyncio.sleep(1/30)
+                mpwriter.append(img_byte_arr, {
+                    'Content-Type': 'image/jpeg'
+                })
+                await mpwriter.write(response, False)
+            await asyncio.sleep(1/15)
         await response.drain()
     return response
 
