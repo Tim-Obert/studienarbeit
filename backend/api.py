@@ -79,6 +79,7 @@ async def single(request):
     })
     await response.prepare(request)
     buffer = frameserver.get_buffer(id)
+    last = 0
     while True:
         with MultipartWriter('image/jpeg', boundary="frame") as mpwriter:
             packet = buffer.get_latest_keyframe()

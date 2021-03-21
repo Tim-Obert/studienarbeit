@@ -7,8 +7,8 @@
                     <div class="camera" v-for="cam in cameraArray" :key="cam.id">
                         <v-card class="mx-auto mr-5 mt-5" max-width="400">
                             <div style="position: relative">
-                                <img :src="streamPath + cam.name" :id="'stream.' + cam.name" width="100%"/>
-                                <canvas :id="'overlay.' + cam.name" style="position: absolute; width: 100%; height: 100%; left: 0; top: 0;"></canvas>
+                                <img :src="streamPath + cam.id" :id="'stream.' + cam.id" width="100%"/>
+                                <canvas :id="'overlay.' + cam.id" style="position: absolute; width: 100%; height: 100%; left: 0; top: 0;"></canvas>
                             </div>
                             <v-card-subtitle class="pb-0">
                                 {{cam.name}}
@@ -81,12 +81,11 @@
             const connection = new WebSocket('ws://localhost:5678')
             connection.onmessage = (e: any) => {
                 const event = JSON.parse(e.data)
-                if (event.event == "MotionResult") {
-                    cameraStoreMutations.get(event.data.camera.name).last_motion = Date.now();
-                    
-                    const image = document.getElementById('stream.' + event.data.camera.name) as HTMLImageElement;
+                if (event.event == "MotionResult" && event.data.motion) {
+                    cameraStoreMutations.get(event.data.camera.id).last_motion = Date.now();
+                    const image = document.getElementById('stream.' + event.data.camera.id) as HTMLImageElement;
                     const scale = image.width / image.naturalWidth;
-                    const canvas = document.getElementById('overlay.' + event.data.camera.name) as HTMLCanvasElement;
+                    const canvas = document.getElementById('overlay.' + event.data.camera.id) as HTMLCanvasElement;
                     const ctx = canvas?.getContext('2d');
                     if (ctx === null) {
                         return;
