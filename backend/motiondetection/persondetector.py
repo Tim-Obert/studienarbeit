@@ -3,6 +3,7 @@ from motiondetection.motiondetectionresult import MotionDetectionResult
 from models.camera import Camera
 from framebuffer import FrameBuffer
 import cv2
+import av
 
 """
 Analyzes Video-Frames using Person-Detection Method
@@ -16,9 +17,14 @@ class PersonDetector(MotionDetector):
         super().__init__(*args)
 
     async def _analyze(self, camera: Camera, buffer: FrameBuffer) -> MotionDetectionResult:
-        frame = buffer.get_latest_packet()
-        if frame == None:
+        packet = buffer.get_latest_keyframe()
+        if packet == None:
             return MotionDetectionResult(False, 0, camera)
+        frames = packet.decode()
+        vfs = [x for x in frames if isinstance(x, av.VideoFrame)]
+        if len(vfs) == 0:
+            return MotionDetectionResult(False, 0, camera)
+        frame = vfs[0]
         img = cv2.cvtColor(frame.to_rgb().to_ndarray(), cv2.COLOR_BGR2RGB)
 
         hog = cv2.HOGDescriptor()

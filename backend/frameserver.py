@@ -19,7 +19,7 @@ class FrameServer:
 
     async def capture(self, cam: Camera):
         #player = MediaPlayer(cam.url, options={"rtsp_transport": "tcp"})
-        #self.__buffers[cam.name] = FrameBuffer(30*10)
+        self.__buffers[cam.id] = FrameBuffer(30*10)
         #self.__players[cam.name] = player
         
         #while(1):
