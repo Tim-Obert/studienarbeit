@@ -24,7 +24,7 @@ class MotionDetector(ABC):
                     await self._on_before_analyze()
 
                     for cam in self.db.get_cameras():
-                        res = await self._analyze(cam, self.frameserver.get_buffer(cam.name))
+                        res = await self._analyze(cam, self.frameserver.get_buffer(cam.id))
                         await self._on_result(res)
                         observer.on_next(res)
                             

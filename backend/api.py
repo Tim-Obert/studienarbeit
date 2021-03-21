@@ -7,10 +7,7 @@ from models.settings import Settings
 from aiohttp import web, MultipartWriter
 from aiortc import RTCPeerConnection, RTCSessionDescription
 from aiortc.contrib.media import MediaPlayer
-import uuid
 import json
-import cv2 as cv
-from PIL import Image
 from base64 import b64encode
 import io
 import asyncio
@@ -75,14 +72,13 @@ async def single_frame(request):
     return response
 
 async def single(request):
-    name = request.match_info['name']
+    id = int(request.match_info['id'])
     response = web.StreamResponse(status=200, reason='OK', headers={
         'Content-Type': 'multipart/x-mixed-replace; '
                         'boundary=--frame',
     })
     await response.prepare(request)
-    buffer = frameserver.get_buffer(name)
-    last = 0
+    buffer = frameserver.get_buffer(id)
     while True:
         with MultipartWriter('image/jpeg', boundary="frame") as mpwriter:
             packet = buffer.get_latest_keyframe()
@@ -119,7 +115,7 @@ async def offer(request):
             await pc.close()
             pcs.discard(pc)
 
-    cam = db.get_camera(params['name'])
+    cam = db.get_camera(int(params['id']))
     player = MediaPlayer(cam.url, options={"rtsp_transport": "tcp"})#frameserver.get_player(cam.name)
 
     await pc.setRemoteDescription(offer)
@@ -142,8 +138,20 @@ async def offer(request):
 async def addCamera(request):
     params = await request.json()
     cam = Camera(params['name'], params['url'])
-    db.insert_camera(cam)
+    id = db.insert_camera(cam)
+    cam.id = id
+    db.update_camera(id, cam)
     asyncio.create_task(frameserver.capture(cam))
+    return web.Response(status=201, text=json.dumps({'id': id}))
+
+async def updateCamera(request):
+    params = await request.json()
+    cam = params['camera']
+    old_cam = db.get_camera(cam['id'])
+    if cam['name'] != old_cam.name and len(cam['name']) > 0:
+        old_cam.name = cam['name']
+
+    db.update_camera(cam['id'], old_cam)
     return web.Response(status=201)
 
 async def getCameras(request):
@@ -151,9 +159,10 @@ async def getCameras(request):
         content_type="application/json",
         text=json.dumps(db.get_cameras(), default=lambda o: o.__dict__),
     )
+
 async def deleteCamera(request):
     params = await request.json()
-    db.delete_camera(params['name'])
+    db.delete_camera(int(params['id']))
     return web.Response(status=204)
 
 async def getRecordings(request):
@@ -188,9 +197,10 @@ async def run(fs: FrameServer, database: DBConnector):
     app.router.add_get("/", multi)
     app.router.add_get("/test", test)
     app.router.add_get("/save", save)
-    app.router.add_get("/streams/{name}", single)
+    app.router.add_get("/streams/{id}", single)
     app.router.add_post("/webrtc/offer", offer)
     app.router.add_post("/camera", addCamera)
+    app.router.add_put("/camera", updateCamera)
     app.router.add_delete("/camera", deleteCamera)
     app.router.add_get("/cameras", getCameras)
     app.router.add_get("/recordings", getRecordings)

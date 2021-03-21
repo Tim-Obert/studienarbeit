@@ -92,7 +92,7 @@
         },
         methods: {
             async addCamera() {
-                await cameraService.addCamera(new Camera(this.name, this.url))
+                await cameraService.addCamera(new Camera(null, this.name, this.url, null))
                     .then((res) => {
                         if (res.status === 201) {
                             this.dialog = false
@@ -101,11 +101,7 @@
                             this.errorMessage = "Error"
                             //TODO: error handling, if backend responses with errors
                         }
-                }).catch((err) => {
-                this.error = true
-                this.errorMessage = "Error: " + err
-                //TODO: error handling, if backend responses with errors
-            })
+                })
             }
         }
     }

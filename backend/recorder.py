@@ -18,7 +18,7 @@ class Recorder:
         self.__recording: Dict[str, ActiveRecording] = dict()
 
     async def capture(self, cam: Camera, trigger: RecordingTrigger, duration: int = 10):
-        if cam.name in self.__recording:
+        if cam.id in self.__recording:
             return
 
         self.start_capture(cam, trigger)
@@ -26,10 +26,10 @@ class Recorder:
         self.stop_capture(cam)        
 
     def start_capture(self, cam: Camera, trigger: RecordingTrigger, with_buffer: bool = False) -> Tuple[VideoWriter, Disposable]:
-        if cam.name in self.__recording:
+        if cam.id in self.__recording:
             return
 
-        buffer = self.__frameserver.get_buffer(cam.name)
+        buffer = self.__frameserver.get_buffer(cam.id)
         writer = VideoWriter(self.__generate_name(cam, trigger))
         writer.open()
         if with_buffer:
@@ -38,14 +38,14 @@ class Recorder:
         self.__recording[cam.name] = ActiveRecording(writer, subscription)
 
     def stop_capture(self, cam: Camera):
-        if cam.name not in self.__recording:
+        if cam.id not in self.__recording:
             return
         self.__recording[cam.name].subscription.dispose()
         self.__recording[cam.name].writer.close()
         del self.__recording[cam.name]
 
     async def capture_while_motion(self, cam: Camera, trigger: RecordingTrigger, threshold: int):
-        if cam.name in self.__recording:
+        if cam.id in self.__recording:
             self.__recording[cam.name].last_motion = datetime.now()
             return
 
@@ -59,7 +59,7 @@ class Recorder:
         self.stop_capture(cam)
 
     def __generate_name(self, cam: Camera, trigger: RecordingTrigger) -> str:
-        return "recordings/" + cam.name + "_" + str(datetime.utcnow()) + "_" + str(trigger) + ".mp4"
+        return "recordings/" + str(cam.id) + "_" + str(datetime.utcnow()) + "_" + str(trigger) + ".mp4"
 
 class ActiveRecording:
     def __init__(self, writer: VideoWriter, subscription: Disposable) -> None:

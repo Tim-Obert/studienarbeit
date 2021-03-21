@@ -20,8 +20,8 @@
             }
         },
         props: {
-            name: {
-                type: String,
+            id: {
+                type: Number,
                 required: true
             },
             useStun: {
@@ -30,7 +30,7 @@
 
         },
         methods: {
-            negotiate(pc, name) {
+            negotiate(pc, id) {
                 pc.addTransceiver('video', {direction: 'recvonly'});
                 pc.addTransceiver('audio', {direction: 'recvonly'});
                 return pc.createOffer().then(function (offer) {
@@ -55,7 +55,7 @@
                         body: JSON.stringify({
                             sdp: offer.sdp,
                             type: offer.type,
-                            name: name
+                            id: id
                         }),
                         headers: {
                             'Content-Type': 'application/json'
@@ -87,7 +87,7 @@
                     this.streamObject = evt.streams[0];
                     this.loaded = true;
                 }.bind(this));
-                this.negotiate(pc, this.name);
+                this.negotiate(pc, this.id);
             },
 
         },

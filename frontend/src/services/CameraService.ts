@@ -7,32 +7,40 @@ export default class CameraService {
 
     async addCamera(camera: Camera) {
         return this.apiService.post("/camera", camera)
-            .then((res) => {
+            .then(r =>  r.json().then(data => ({status: r.status, body: data})))
+            .then((data) => {
+                camera.id = data.body.id
                 cameraStoreMutations.add(camera)
-                return res;
+                return data;
         })
     }
 
-    async removeCamera(name: string) {
-        return this.apiService.delete("/camera", {name: name})
+    async removeCamera(id: number) {
+        return this.apiService.delete("/camera", {id: id})
             .then((res) => {
-                cameraStoreMutations.remove(name)
+                cameraStoreMutations.remove(id)
                 return res;
         })
     }
 
-    async updateCamera(){
-        //TODO: Implement, if cameras are identified via id
-        return 1
+    async updateCamera(camera: Camera){
+        return this.apiService.put("/camera", {camera: camera})
+            .then((res) => {
+                cameraStoreMutations.update(camera)
+                return res;
+            })
     }
 
     async getCameras(): Promise<Array<Camera>> {
+        const cameraArray = new Array<Camera>()
         return await this.apiService.get("/cameras")
             .then((responseBody) => {
-                const cameraArray = new Array<Camera>()
                 responseBody.map((cam: Camera)=>{
-                    cameraArray.push(cam)
+                    cameraArray.push(new Camera(cam.id, cam.name, cam.url, cam.last_motion))
                 })
+                return cameraArray
+            }).catch(() => {
+                //alert("No connection to backend")
                 return cameraArray
             })
     }

@@ -14,7 +14,7 @@ class DBConnector(ABC):
         pass
 
     @abstractmethod
-    def get_camera(self, name: str) -> Camera:
+    def get_camera(self, id: int) -> Camera:
         pass
 
     @abstractmethod
@@ -22,11 +22,11 @@ class DBConnector(ABC):
         pass 
 
     @abstractmethod
-    def update_camera(self, name: str, cam: Camera):
+    def update_camera(self, id: int, cam: Camera):
         pass
 
     @abstractmethod
-    def delete_camera(self, name: str):
+    def delete_camera(self, id: int):
         pass
 
     #Settings

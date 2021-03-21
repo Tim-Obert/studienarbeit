@@ -10,7 +10,7 @@ import time
 
 class FrameServer:
 
-    __players: typing.Dict[str, MediaPlayer] = dict()
+    #__players: typing.Dict[str, MediaPlayer] = dict()
     __buffers: typing.Dict[str, FrameBuffer] = dict()
     frametime = 1/4
 
@@ -28,7 +28,7 @@ class FrameServer:
         #    self.__buffers[cam.name].add(frame)
         #    await asyncio.sleep(self.frametime)
 
-        capture_thread = threading.Thread(target= lambda x, y: self.__capture_thread(x, y), args=(cam, self.__buffers[cam.name]))
+        capture_thread = threading.Thread(target= lambda x, y: self.__capture_thread(x, y), args=(cam, self.__buffers[cam.id]))
         capture_thread.start()
 
     def __capture_thread(self, cam: Camera, buffer: FrameBuffer):
@@ -41,8 +41,8 @@ class FrameServer:
                 last_pts = packet.pts
                 buffer.add(packet)
 
-    def get_player(self, name: str) -> MediaPlayer:
-        return self.__players[name]
+    #def get_player(self, id: int) -> MediaPlayer:
+    #    return self.__players[id]
 
-    def get_buffer(self, name: str) -> FrameBuffer:
-        return self.__buffers[name]
+    def get_buffer(self, id: int) -> FrameBuffer:
+        return self.__buffers[id]

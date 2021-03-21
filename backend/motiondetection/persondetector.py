@@ -7,14 +7,14 @@ import cv2
 """
 Analyzes Video-Frames using Person-Detection Method
 """
-class PersonDetector(MotionDetector):
 
+
+class PersonDetector(MotionDetector):
     count = 0
 
     def __init__(self, *args) -> None:
         super().__init__(*args)
 
-    
     async def _analyze(self, camera: Camera, buffer: FrameBuffer) -> MotionDetectionResult:
         frame = buffer.get_latest_packet()
         if frame == None:

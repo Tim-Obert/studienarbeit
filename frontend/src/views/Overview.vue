@@ -4,7 +4,7 @@
 
             <div>
                 <v-row>
-                    <div class="camera" v-for="(cam, index) in cameraArray" :key="index">
+                    <div class="camera" v-for="cam in cameraArray" :key="cam.id">
                         <v-card class="mx-auto mr-5 mt-5" max-width="400">
                             <div style="position: relative">
                                 <img :src="streamPath + cam.name" :id="'stream.' + cam.name" width="100%"/>
@@ -18,18 +18,18 @@
                                 {{cam.url}}
                             </v-card-text>
                             <v-card-text class="text--primary">
-                                Last Motion: {{timestampToString(cam.last_motion)}}
+                                Last Motion: {{cam.getLastMotionAsDateString()}}
                             </v-card-text>
                             <v-card-actions class="justify-center">
-                                <v-btn color="orange" :to="'/stream/'+cam.name" text>
+                                <v-btn color="orange" :to="'/stream/'+cam.id" text>
                                     Open
                                 </v-btn>
 
                                 <v-btn color="orange" text>
-                                    Edit
+                                    <EditCameraDialog :cam="cam"/>
                                 </v-btn>
 
-                                <DeleteCameraDialog :name="cam.name"/>
+                                <DeleteCameraDialog :cam="cam"/>
                             </v-card-actions>
                         </v-card>
                     </div>
@@ -55,9 +55,11 @@
     import AddCameraDialog from "@/components/Camera/AddCameraDialog.vue";
     import DeleteCameraDialog from "@/components/Camera/DeleteCameraDialog.vue";
     import {cameraStoreMutations, cameraStoreState} from "@/store/CameraStore";
+    import EditCameraDialog from "@/components/Camera/EditCameraDialog.vue";
 
     @Component({
         components: {
+          EditCameraDialog,
             WsStreams,
             AddCameraDialog,
             DeleteCameraDialog
@@ -75,7 +77,6 @@
         },
         created: async function () {
             await cameraStoreMutations.getList()
-
             //WS-Socket for Motion
             const connection = new WebSocket('ws://localhost:5678')
             connection.onmessage = (e: any) => {
@@ -102,14 +103,6 @@
                 }
             }
         },
-        methods: {
-            timestampToString(timestamp: Date) {
-                if (timestamp == null) {
-                    return "-";
-                }
-                return new Date(timestamp).toUTCString();
-            }
-        }
     })
     export default class Overview extends Vue {
     }

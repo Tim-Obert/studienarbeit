@@ -9,7 +9,6 @@ from motiondetection.bsmotiondetector import BSMotionDetector, MotionDetectionRe
 from motiondetection.persondetector import PersonDetector
 from recorder import Recorder, RecordingTrigger
 import api
-import threading
 
 db = TinyDBConnector('data/db.json')
 frameserver = FrameServer()
@@ -21,24 +20,25 @@ async def run():
 
     frameserver = FrameServer()
     websocketserver = WebsocketServer(frameserver)
-    print(db.get_settings())
 
     cameras = db.get_cameras()
-    for cam in cameras:
-        asyncio.create_task(frameserver.capture(cam))
+    if cameras is not None:
+        for cam in cameras:
+            asyncio.create_task(frameserver.capture(cam))
 
-    #motiondetector = BSMotionDetector(db, frameserver)
-    #motiondetector.run().subscribe(on_next=lambda res: asyncio.create_task(motion_result_handler(res)))
+        motiondetector = PersonDetector(db, frameserver)
+        motiondetector.run().subscribe(on_next=lambda res: asyncio.create_task(motion_result_handler(res)))
 
     asyncio.create_task(websocketserver.run())
     asyncio.create_task(api.run(frameserver, db))
+
 
 async def motion_result_handler(result: MotionDetectionResult):
     msg = "result from " + result.camera.name + ": " + str(result.motion) + " (Magnitude: " + str(result.intensity) + ")"
     print(msg)
     await websocketserver.broadcast_event("MotionResult", result)
     if result.motion:
-        #await recorder.capture_while_motion(result.camera, RecordingTrigger.MOTION, 10)
+        await recorder.capture_while_motion(result.camera, RecordingTrigger.MOTION, 10)
         pass
 
 if (__name__ == "__main__"):
