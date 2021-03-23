@@ -26,6 +26,7 @@ class Recorder:
         self.stop_capture(cam)        
 
     def start_capture(self, cam: Camera, trigger: RecordingTrigger, with_buffer: bool = False) -> Tuple[VideoWriter, Disposable]:
+        print("starting capture of " + cam.name)
         if cam.id in self.__recording:
             return
 
@@ -35,25 +36,26 @@ class Recorder:
         if with_buffer:
             writer.write_packets(buffer.get_packets())
         subscription = buffer.get_observable().subscribe(on_next=lambda p: writer.write_packet(p))
-        self.__recording[cam.name] = ActiveRecording(writer, subscription)
+        self.__recording[cam.id] = ActiveRecording(writer, subscription, datetime.now())
 
     def stop_capture(self, cam: Camera):
+        print("stopping capture of " + cam.name)
         if cam.id not in self.__recording:
             return
-        self.__recording[cam.name].subscription.dispose()
-        self.__recording[cam.name].writer.close()
-        del self.__recording[cam.name]
+        self.__recording[cam.id].subscription.dispose()
+        self.__recording[cam.id].writer.close()
+        del self.__recording[cam.id]
 
     async def capture_while_motion(self, cam: Camera, trigger: RecordingTrigger, threshold: int):
         if cam.id in self.__recording:
-            self.__recording[cam.name].last_motion = datetime.now()
+            self.__recording[cam.id].last_motion = datetime.now()
             return
 
         self.start_capture(cam, trigger, True)
         while True:
             await asyncio.sleep(1)
             now = datetime.now()
-            last_motion = self.__recording[cam.name].last_motion
+            last_motion = self.__recording[cam.id].last_motion
             if last_motion is not None and (now - last_motion).seconds > threshold:
                 break
         self.stop_capture(cam)
@@ -62,7 +64,7 @@ class Recorder:
         return "recordings/" + str(cam.id) + "_" + str(datetime.utcnow()) + "_" + str(trigger) + ".mp4"
 
 class ActiveRecording:
-    def __init__(self, writer: VideoWriter, subscription: Disposable) -> None:
+    def __init__(self, writer: VideoWriter, subscription: Disposable, last_motion: datetime) -> None:
         self.writer = writer
         self.subscription = subscription
-        self.last_motion = None
+        self.last_motion = last_motion

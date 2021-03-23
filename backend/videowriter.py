@@ -12,50 +12,59 @@ class VideoWriter:
         if packet is None:
             return
 
-        frames = packet.decode()
-        vfs = [x for x in frames if isinstance(x, av.VideoFrame)]
+        res = self.__try_add_stream(packet)
+        if not res:
+            return
 
-        if (len(vfs) == 0):
-            return 
-
-        self.__try_add_stream(frames)
-        self.__mux(vfs[0])
+        self.__mux_one(packet)
 
     def write_packets(self, packets: List[av.Packet]) -> None:
         if len(packets) == 0:
             return
 
-        frames = [frames for frames in [frames.decode() for frames in packets] if len(frames) > 0]
+        res = self.__try_add_stream(packets[-1])
+        if not res:
+            return
+        self.__mux(packets)
 
-        self.__try_add_stream(frames[0])
-
-        for framelist in frames:
-            #frame.pts = frame.pts
-            #frame.time_base = frame.time_base
-            self.__mux(framelist[0])
             
 
     def close(self):
         self.__output.close()
 
-    def __try_add_stream(self, sample_frames: List[av.VideoFrame]):
+    def __try_add_stream(self, sample_packet: av.Packet) -> bool:
         if len(self.__output.streams.video) == 0:
-            self.__stream = self.__output.add_stream('libx264', '30')
+            if sample_packet.stream_index == 1: 
+                self.__output.add_stream('aac')
+
+            sample_frames = sample_packet.decode()
+            if len(sample_frames) == 0:
+                return False
+
             sample_frame = [x for x in sample_frames if isinstance(x, av.VideoFrame)][0]
+            self.__stream = self.__output.add_stream('libx264', '30')
             self.__stream.pix_fmt = sample_frame.format.name
             self.__stream.width = sample_frame.width
             self.__stream.height = sample_frame.height
+            return True
+        return True
 
-    def __mux(self, frame: av.VideoFrame):
-        print(frame)
+    def __mux(self, packets: List[av.Packet]):
+        if len(packets) == 0:
+            return
+
+        #print(packets)
         try:
-            opacket = self.__stream.encode(frame)
+            self.__output.mux(packets)
         except Exception as e:
             print(e)
-            return False
 
-        if opacket is not None:
-            try:
-                self.__output.mux(opacket)
-            except Exception:
-                a=1
+    def __mux_one(self, packet: av.Packet):
+        if packet is None:
+            return
+
+        #print(packet)
+        try:
+            self.__output.mux_one(packet)
+        except Exception as e:
+            print(e)

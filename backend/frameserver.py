@@ -32,9 +32,9 @@ class FrameServer:
         capture_thread.start()
 
     def __capture_thread(self, cam: Camera, buffer: FrameBuffer):
-        video = av.open(cam.url, mode="r", options={'rtsp_transport':'tcp'})
+        container = av.open(cam.url, mode="r", options={'rtsp_transport':'tcp'})
         last_pts = 0
-        for packet in video.demux(video.streams.video[0]):
+        for packet in container.demux(container.streams.video[0]):
             if not isinstance(packet.pts, int):
                 continue
             if packet.pts > last_pts:
