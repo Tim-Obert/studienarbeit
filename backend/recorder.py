@@ -1,4 +1,6 @@
+from dbconnector import DBConnector
 from enum import Enum
+from tinydbconnector import TinyDBConnector
 from rx.core.typing import Disposable
 from models.camera import Camera
 from frameserver import FrameServer
@@ -13,9 +15,10 @@ class RecordingTrigger(Enum):
 
 class Recorder:
 
-    def __init__(self, fs: FrameServer) -> None:
+    def __init__(self, fs: FrameServer, db: DBConnector) -> None:
         self.__frameserver = fs
         self.__recording: Dict[str, ActiveRecording] = dict()
+        self.__db = db
 
     async def capture(self, cam: Camera, trigger: RecordingTrigger, duration: int = 10):
         if cam.id in self.__recording:
@@ -61,7 +64,7 @@ class Recorder:
         self.stop_capture(cam)
 
     def __generate_name(self, cam: Camera, trigger: RecordingTrigger) -> str:
-        return "recordings/" + str(cam.id) + "_" + str(datetime.utcnow()) + "_" + str(trigger) + ".mp4"
+        return self.__db.get_settings().video_path + str(cam.id) + "_" + str(datetime.utcnow()) + "_" + str(trigger) + ".mp4"
 
 class ActiveRecording:
     def __init__(self, writer: VideoWriter, subscription: Disposable, last_motion: datetime) -> None:

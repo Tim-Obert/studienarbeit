@@ -39,7 +39,7 @@ class FrameBuffer:
     def get_latest_keyframe(self) -> av.Packet:
         keyframes = [x for x in self.__shift_to_sorted(self.__buffer) if x is not None and x.is_keyframe]
         if (len(keyframes) > 0):
-            return keyframes[0]
+            return keyframes[-1]
         else:
             return None
 
