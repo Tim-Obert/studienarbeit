@@ -1,3 +1,6 @@
+import av
+import imutils
+
 from motiondetection.motiondetector import MotionDetector
 from motiondetection.motiondetectionresult import MotionDetectionResult
 from models.camera import Camera
@@ -8,36 +11,44 @@ import asyncio
 """
 Analyzes Video-Frames using Background-Subtraction Method
 """
+
+
 class BSMotionDetector(MotionDetector):
+    count = 0
+
     def __init__(self, *args) -> None:
         self.framestore = dict()
         super().__init__(*args)
+        self.backSub = cv2.createBackgroundSubtractorMOG2()
+        self.initial_frame = None
 
-    
     async def _analyze(self, camera: Camera, buffer: FrameBuffer) -> MotionDetectionResult:
-        await asyncio.sleep(10)
-        return MotionDetectionResult(True, 100, camera, [])
-        frame = buffer.get_latest_packet()
-        if frame == None:
+        packet = buffer.get_latest_keyframe()
+        if packet == None:
             return MotionDetectionResult(False, 0, camera)
-        img = cv2.cvtColor(frame.to_rgb().to_ndarray(), cv2.COLOR_BGR2GRAY)
-        if camera.name not in self.framestore:
-            self.framestore[camera.name] = img
+        frames = packet.decode()
+        vfs = [x for x in frames if isinstance(x, av.VideoFrame)]
+        if len(vfs) == 0:
+            return MotionDetectionResult(False, 0, camera)
+        frame = vfs[0]
+
+        img = cv2.cvtColor(frame.to_rgb().to_ndarray(), cv2.COLOR_BGR2RGB)
+        img = imutils.resize(img, width=600)
+        # Resize to have a width of 500px. Improves speed without sacrificing accuracy
+        if self.initial_frame is None:
+            self.initial_frame = img
             return MotionDetectionResult(False, 0, camera)
 
-        last = self.framestore[camera.name]
-        self.framestore[camera.name] = img
-        
-        diff = cv2.subtract(img, last)
-        ret, thresh = cv2.threshold(diff, 120, 255, cv2.THRESH_BINARY)
-        white = cv2.countNonZero(thresh) # alternative: mean()
+        dilated_frame = self.backSub.apply(img)
 
-        boxes = []
-        contours, _ = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+        # Find the contours of the dilated version of the thresholded image
+        contours = cv2.findContours(dilated_frame.copy(), cv2.RETR_EXTERNAL,
+                                    cv2.CHAIN_APPROX_SIMPLE)
+        contours = imutils.grab_contours(contours)
         for contour in contours:
-            # Find bounding rectangles
-            x,y,w,h = cv2.boundingRect(contour)
-            boxes.append([x,y,w,h])
-
-        return MotionDetectionResult(white > 20, white, camera, boxes)
-
+            boxes = []
+            # If contour is smaller than the minimum specified area it does not represent
+            #  significant motion and should thus be ignored
+            if cv2.contourArea(contour) > 500:
+                return MotionDetectionResult(True, 500, camera, boxes)
+        return MotionDetectionResult(False, 0, camera)

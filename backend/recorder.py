@@ -7,9 +7,11 @@ import asyncio
 from datetime import datetime
 from typing import Tuple, Dict
 
+
 class RecordingTrigger(Enum):
     MOTION = 0
     MANUAL = 1
+
 
 class Recorder:
 
@@ -23,7 +25,7 @@ class Recorder:
 
         self.start_capture(cam, trigger)
         await asyncio.sleep(duration)
-        self.stop_capture(cam)        
+        self.stop_capture(cam)
 
     def start_capture(self, cam: Camera, trigger: RecordingTrigger, with_buffer: bool = False) -> Tuple[VideoWriter, Disposable]:
         print("starting capture of " + cam.name)
@@ -61,7 +63,9 @@ class Recorder:
         self.stop_capture(cam)
 
     def __generate_name(self, cam: Camera, trigger: RecordingTrigger) -> str:
-        return "recordings/" + str(cam.id) + "_" + str(datetime.utcnow()) + "_" + str(trigger) + ".mp4"
+        dateTimeObj = datetime.now()
+        timestampStr = dateTimeObj.strftime("%d-%b-%Y_%H%M%S.%f.")
+        return "recordings/" + str(cam.id) + "_" + timestampStr + "_" + str(trigger) + ".mp4"
 
 class ActiveRecording:
     def __init__(self, writer: VideoWriter, subscription: Disposable, last_motion: datetime) -> None:

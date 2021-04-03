@@ -9,6 +9,7 @@ import asyncio
 import rx
 from rx.core.typing import Observable
 
+
 class MotionDetector(ABC):
     _idle_time: int = 2
 
@@ -27,9 +28,10 @@ class MotionDetector(ABC):
                         res = await self._analyze(cam, self.frameserver.get_buffer(cam.id))
                         await self._on_result(res)
                         observer.on_next(res)
-                            
+
                     await self._on_after_analyze()
                     await asyncio.sleep(self._idle_time)
+
             return asyncio.create_task(task(observer))
 
         return rx.create(analyze_observable)
