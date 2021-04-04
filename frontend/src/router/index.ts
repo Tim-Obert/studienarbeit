@@ -1,28 +1,22 @@
 import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
-import Home from '../views/Home.vue'
 import Overview from "@/views/Overview.vue";
-import Recorded from "@/views/Recorded.vue";
 import SingleStream from "@/views/SingleStream.vue";
 import Settings from "@/views/Settings.vue";
+import Recordings from "@/views/Recordings.vue";
 
 Vue.use(VueRouter)
 
 const routes: Array<RouteConfig> = [
   {
     path: '/',
-    name: 'Home',
-    component: Home
-  },
-  {
-    path: '/overview',
     name: 'Overview',
     component: Overview
   },
   {
     path: '/recorded',
-    name: 'Recorded',
-    component: Recorded
+    name: 'Recordings',
+    component: Recordings
   },
   {
     path: '/stream/:id',

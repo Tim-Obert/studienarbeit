@@ -1,53 +1,34 @@
 <template>
   <v-card class="mx-auto mr-5 mt-5" max-width="400">
-    <video :src="video.path" controls/>
+    <video :src="'recordings/' +video.filename" controls/>
     <v-card-title>
-      {{ video.camera }}
+      {{ video.getCreationDateTimeAsDateString() }}
     </v-card-title>
 
     <v-card-subtitle class="pb-0">
-      {{ video.creationDateTime }}
+      {{ video.filename }}
     </v-card-subtitle>
 
-    <v-card-text class="text--primary">
-      {{ video.url }}
+    <v-card-text class="text--primary" v-if="video.camera != null">
+      Camera: {{video.camera.name}}
     </v-card-text>
-    <v-card-actions class="justify-center">
-      <v-btn class="mx-2" @click="download" fab dark small color="orange">
-        <v-icon dark>
-          mdi-download
-        </v-icon>
-      </v-btn>
-      <v-btn class="mx-2" @click="remove" fab dark small color="orange">
-        <v-icon dark>
-          mdi-delete
-        </v-icon>
-      </v-btn>
-    </v-card-actions>
   </v-card>
 </template>
 
 <script>
-import {VideoInterface} from "@/interfaces/VideoInterface";
+
+import {Recording} from "@/interfaces/RecordingInterface";
 
 export default {
   name: "VideoCard",
   props: {
-    video: VideoInterface
+    video: Recording
   },
-  methods: {
-    download() {
-      //todo: download
-      alert("download")
-    },
-    remove() { // method can't be named in "delete"
-      //todo: remove
-      alert("remove")
-    },
-  }
 }
 </script>
 
 <style scoped>
-
+  video {
+    width: 100%;
+  }
 </style>

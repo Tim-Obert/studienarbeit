@@ -65,7 +65,7 @@ class Recorder:
 
     def __generate_name(self, cam: Camera, trigger: RecordingTrigger) -> str:
         dateTimeObj = datetime.now()
-        timestampStr = dateTimeObj.strftime("%d-%b-%Y_%H%M%S.%f.")
+        timestampStr = dateTimeObj.strftime("%d-%m-%Y_%H-%M-%S")
         return self.__db.get_settings().video_path + str(cam.id) + "_" + timestampStr + "_" + str(trigger) + ".mp4"
 
 class ActiveRecording:
