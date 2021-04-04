@@ -11,7 +11,7 @@ from rx.core.typing import Observable
 
 
 class MotionDetector(ABC):
-    _idle_time: int = 2
+    _idle_time: int = 1
 
     def __init__(self, db: DBConnector, frameserver: FrameServer):
         self.db = db

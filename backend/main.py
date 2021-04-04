@@ -1,9 +1,5 @@
-import argparse
 import asyncio
 from datetime import datetime
-
-import cv2
-
 from motiondetection.motiondetector import MotionDetector
 from tinydbconnector import TinyDBConnector
 from models.camera import Camera
@@ -13,18 +9,14 @@ from motiondetection.bsmotiondetector import BSMotionDetector, MotionDetectionRe
 from motiondetection.persondetector import PersonDetector
 from recorder import Recorder, RecordingTrigger
 import api
-import imutils
 
 db = TinyDBConnector('data/db.json')
-frameserver = FrameServer()
+frameserver = FrameServer(db)
 websocketserver = WebsocketServer(frameserver)
-recorder = Recorder(frameserver)
+recorder = Recorder(frameserver, db)
 
 
 async def run():
-    db = TinyDBConnector('data/db.json')
-    frameserver = FrameServer()
-    websocketserver = WebsocketServer(frameserver)
     cameras = db.get_cameras()
     if cameras is not None:
         for cam in cameras:

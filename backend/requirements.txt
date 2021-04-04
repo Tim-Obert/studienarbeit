@@ -3,3 +3,7 @@ opencv-python
 asyncio
 aiohttp
 aiortc
+rx
+websockets
+pillow
+tinydb

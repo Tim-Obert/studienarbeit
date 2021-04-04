@@ -1,3 +1,5 @@
+from dbconnector import DBConnector
+from tinydbconnector import TinyDBConnector
 from models.camera import Camera
 from framebuffer import FrameBuffer
 import cv2 as cv
@@ -12,14 +14,13 @@ class FrameServer:
 
     #__players: typing.Dict[str, MediaPlayer] = dict()
     __buffers: typing.Dict[str, FrameBuffer] = dict()
-    frametime = 1/4
 
-    def __init__(self):
-        pass
+    def __init__(self, db: DBConnector):
+        self.__db = db
 
     async def capture(self, cam: Camera):
         #player = MediaPlayer(cam.url, options={"rtsp_transport": "tcp"})
-        self.__buffers[cam.id] = FrameBuffer(30*10)
+        self.__buffers[cam.id] = FrameBuffer(self.__db.get_settings().frame_buffer_size)
         #self.__players[cam.name] = player
         
         #while(1):
