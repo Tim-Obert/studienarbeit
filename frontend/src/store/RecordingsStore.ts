@@ -14,11 +14,14 @@ export const recordingsStoreMutations = {
         recordingsStoreState.allRecordingsArray = recordingsStoreState.recordingsArray
     },
     sortByCamera: () => {
-        recordingsStoreState.recordingsArray.sort(function (a: RecordingInterface, b: RecordingInterface) {
-            if (a.camera?.name < b.camera?.name) {
+        recordingsStoreState.recordingsArray.filter(x => x.camera !== null).sort(function (a: RecordingInterface, b: RecordingInterface) {
+            if (a.camera === null || b.camera === null) {
+                return 0;
+            }
+            if (a.camera.name < b.camera.name) {
                 return -1;
             }
-            if (a.camera?.name < b.camera?.name) {
+            if (a.camera.name < b.camera.name) {
                 return 1;
             }
             return 0;
@@ -26,7 +29,7 @@ export const recordingsStoreMutations = {
     },
      sliceByCameraName: (camera: string) => {
         recordingsStoreState.recordingsArray = recordingsStoreState.allRecordingsArray.filter((video: RecordingInterface) => {
-             return video.camera.name === camera || camera === ""
+             return video.camera?.name === camera || camera === ""
          });
      }
 }

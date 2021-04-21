@@ -3,7 +3,7 @@
     <v-container>
       <v-row>
         <v-col>
-        <RTCStream :id="$route.params.id" :useStun="true" :autoplay="true"/>
+        <RTCStream :id="parseInt($route.params.id, 10)" :useStun="true" :autoplay="true"/>
         </v-col>
         <v-col class="camera-attributes">
           <h1 class="heading">{{cam.name}}</h1>
@@ -17,7 +17,7 @@
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
-import RTCStream from '@/components/RCTStream.vue'
+import RTCStream from '@/components/RTCStream.vue'
 import {Camera} from "@/interfaces/CameraInterface";
 import {cameraStoreMutations} from "@/store/CameraStore";
 

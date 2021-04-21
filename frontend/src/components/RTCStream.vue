@@ -10,7 +10,7 @@
 
 <script>
     export default {
-        name: "RCTStream",
+        name: "RTCStream",
         data: function () {
             return {
                 loaded: false,
