@@ -1,3 +1,5 @@
+import cv2
+
 from dbconnector import DBConnector
 import os
 from videowriter import VideoWriter
@@ -81,6 +83,7 @@ async def single(request):
     buffer = frameserver.get_buffer(id)
     last = 0
     while True:
+
         with MultipartWriter('image/jpeg', boundary="frame") as mpwriter:
             packet = buffer.get_latest_keyframe()
             if packet is not None and packet.pts > last:
@@ -89,11 +92,9 @@ async def single(request):
                 if len(frame) == 0:
                     continue
                 data = frame[0].to_image()
-
                 img_byte_arr = io.BytesIO()
                 data.save(img_byte_arr, format='JPEG')
                 img_byte_arr = img_byte_arr.getvalue()
-
                 mpwriter.append(img_byte_arr, {
                     'Content-Type': 'image/jpeg'
                 })

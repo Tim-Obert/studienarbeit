@@ -26,7 +26,7 @@ class Recorder:
 
         self.start_capture(cam, trigger)
         await asyncio.sleep(duration)
-        self.stop_capture(cam)        
+        self.stop_capture(cam)
 
     def start_capture(self, cam: Camera, trigger: RecordingTrigger, with_buffer: bool = False) -> Tuple[VideoWriter, Disposable]:
         print("starting capture of " + cam.name)
@@ -64,7 +64,9 @@ class Recorder:
         self.stop_capture(cam)
 
     def __generate_name(self, cam: Camera, trigger: RecordingTrigger) -> str:
-        return self.__db.get_settings().video_path + str(cam.id) + "_" + str(datetime.utcnow()) + "_" + str(trigger) + ".mp4"
+        dateTimeObj = datetime.now()
+        timestampStr = dateTimeObj.strftime("%d-%m-%Y_%H-%M-%S")
+        return self.__db.get_settings().video_path + str(cam.id) + "_" + timestampStr + "_" + str(trigger) + ".mp4"
 
 class ActiveRecording:
     def __init__(self, writer: VideoWriter, subscription: Disposable, last_motion: datetime) -> None:
