@@ -84,6 +84,9 @@
                 if (event.event == "MotionResult" && event.data.motion) {
                     cameraStoreMutations.get(event.data.camera.id).last_motion = Date.now();
                     const image = document.getElementById('stream.' + event.data.camera.id) as HTMLImageElement;
+                    if (image === null) {
+                        return;
+                    }
                     const scale = image.width / image.naturalWidth;
                     const canvas = document.getElementById('overlay.' + event.data.camera.id) as HTMLCanvasElement;
                     const ctx = canvas?.getContext('2d');
