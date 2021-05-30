@@ -211,5 +211,5 @@ async def run(fs: FrameServer, database: DBConnector):
     app.router.add_put("/settings", updateSettings)
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, 'localhost', 5000)    
+    site = web.TCPSite(runner, '0.0.0.0' , 5000)
     await site.start()
