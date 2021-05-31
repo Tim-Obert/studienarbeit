@@ -78,7 +78,7 @@
         created: async function () {
             await cameraStoreMutations.getList()
             //WS-Socket for Motion
-            const connection = new WebSocket('ws://localhost:5678')
+            const connection = new WebSocket(process.env.VUE_APP_BACKEND_WS_URL)
             connection.onmessage = (e: any) => {
                 const event = JSON.parse(e.data)
                 if (event.event == "MotionResult" && event.data.motion) {

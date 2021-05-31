@@ -50,8 +50,8 @@
         }
       },
       created: async function () {
-        await recordingsStoreMutations.getList()
         await cameraStoreMutations.getList()
+        await recordingsStoreMutations.getList()
       }
     })
     export default class Recordings extends Vue{}

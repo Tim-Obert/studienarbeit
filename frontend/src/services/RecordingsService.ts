@@ -11,7 +11,7 @@ export default class RecordingsService {
             .then((responseBody) => {
                 responseBody.map((recording: string)=>{
                     let recordingObj = new Recording(recording, null, '', null)
-                    if (recording.match(RegExp("[0-9]_([01][0-9]-){2}20[2-9][0-9]_([0-9][0-9]-){2}[0-9][0-9]_*"))){
+                    if (recording.match(RegExp("[0-9]*_[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]_.*"))){
                         recordingObj = this.filenameToRecording(recording)
                     }
                     recordingArray.push(recordingObj)

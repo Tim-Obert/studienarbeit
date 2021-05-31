@@ -27,9 +27,10 @@ export const recordingsStoreMutations = {
             return 0;
         })
     },
-     sliceByCameraName: (camera: string) => {
-        recordingsStoreState.recordingsArray = recordingsStoreState.allRecordingsArray.filter((video: RecordingInterface) => {
-             return video.camera?.name === camera || camera === ""
-         });
-     }
+    sliceByCameraName: (camera: string) => {
+    console.log(recordingsStoreState.allRecordingsArray, camera);
+    recordingsStoreState.recordingsArray = recordingsStoreState.allRecordingsArray.filter((video: RecordingInterface) => {
+            return video.camera?.name === camera || camera === "";
+        });
+    }
 }
